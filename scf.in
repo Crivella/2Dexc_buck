@@ -1,0 +1,44 @@
+&control
+    calculation       = 'scf'
+    restart_mode      = 'from_scratch'
+    prefix            = 'AlN'
+    tstress           = .true.
+    tprnfor           = .true.
+    pseudo_dir        = '/marconi/home/userexternal/mprete00/PSEUDO_GALILEO/PSEUDO'
+    outdir            = 'tmp/'
+    verbosity         = 'high'
+    disk_io = 'minimal'
+    wf_collect        = .true.
+/
+&system
+    ibrav             = 4
+    celldm(1)         = 5.72
+    celldm(3)         =  6
+    nat               =  2
+    ntyp              = 2
+    ecutwfc           =  100
+    nbnd              = 20
+   ! smearing          = 'fermi-dirac'
+   ! degauss           = 0.0036749326
+/
+&electrons
+    !diagonalization   = 'cg'
+    conv_thr          = 1.0d-8
+    mixing_mode       = 'plain'
+    mixing_beta       = 0.7d0
+/
+&ions
+    ion_dynamics='bfgs',
+    upscale=10
+/
+
+ATOMIC_SPECIES
+Al  26.982  Al.pz-vbc.upf
+N   14.067  N.pz-vbc.upf
+
+ATOMIC_POSITIONS {alat}
+Al      0.000000000   0.577350300   0.00
+N       0.500000000   0.288675100   0.00
+
+K_POINTS {automatic}
+12 12 1 1 1 1
