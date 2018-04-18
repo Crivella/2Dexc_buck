@@ -45,8 +45,8 @@ cat > $IN << EOF
 /
 
 ATOMIC_SPECIES
-Al  26.982  Al.pz-vbc.upf
-N   14.067  N.pz-vbc.upf
+Al  26.982  Al.pz-vbc.UPF
+N   14.067  N.pz-vbc.UPF
 
 ATOMIC_POSITIONS {alat}
 Al      0.000000000   0.577350300   0.00
@@ -86,7 +86,7 @@ cutoff=30 #100
 alat=5.72
 cdim3=6
 #Cycle over different bucklings
-for buck in 0.00 0.06 0.08 0.10 0.12 0.14; do
+for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	buck_bohr=`echo $buck*$alat | bc -l`
 	buck_bohr=`printf %.4f $buck_bohr`
 
@@ -104,7 +104,7 @@ for buck in 0.00 0.06 0.08 0.10 0.12 0.14; do
 	echo -e "\tStart: " `date`
 	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t\t$COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
+	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 	#Extract total energy from output and print it in a two-coloumn file with the buckling
@@ -124,7 +124,7 @@ for buck in 0.00 0.06 0.08 0.10 0.12 0.14; do
 	echo -e "\tStart: " `date`
 	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t\t$COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
+	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 	qepp_plotband.x $OUT bands_b${buck}_plotted.dat
@@ -143,7 +143,7 @@ for buck in 0.00 0.06 0.08 0.10 0.12 0.14; do
 	echo -e "\tStart: " `date`
 	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t\t$COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
+	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 
@@ -154,9 +154,9 @@ for buck in 0.00 0.06 0.08 0.10 0.12 0.14; do
 	print_in_pw2gw
 
 	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw2gw.x"
+	COMMAND="  $RUN_COMMAND $BIN_DIR/pw2gw_new.x"
 	echo -e "\t\t$COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
+	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 	eps_average.x epsX.dat epsY.dat
@@ -166,6 +166,8 @@ for buck in 0.00 0.06 0.08 0.10 0.12 0.14; do
 	VACUUM=`echo "$cdim3 * $alat" | bc -l`
 	ALFA0=`echo "$EPS0 * $VACUUM / (4 * 3.141592)" | bc -l`
 	ALFA0=`printf %.5f $ALFA0`
+
+	echo "alfa0 is    $ALFA0"
 done
 
 
