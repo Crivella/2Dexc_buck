@@ -57,19 +57,19 @@ $KPT_LIST
 EOF
 }
 
-export print_in()
+export -f print_in
 
 SAVE=Etot_vs_buck.dat
 echo -e "# buckling(bohr) Etot(Ry)" > $SAVE
 
+alat=5.72
 for buck in 0.06 0.08 0.10 0.12 0.14; do
+	buck_bohr=`echo $buck*$alat | bc -l`
+	buck_bohr=`printf %.4f $buck_bohr`
+
 	IN=AlN_script.scf_b${buck}.in
 	OUT=AlN_script.scf_b${buck}.out
 
-	alat=5.72
-
-	buck_bohr=`echo $buck*$alat | bc -l`
-	buck_bohr=`printf %.4f $buck_bohr`
 
 	KPT_MODE="K_POINTS {automatic}"
 	KPT_LIST="12 12 1 1 1 1"
@@ -89,6 +89,10 @@ for buck in 0.06 0.08 0.10 0.12 0.14; do
 
 	IN=AlN_script.nscf_b${buck}.in
 	OUT=AlN_script.nscf_b${buck}.out
+
+	KPT_MODE=""
+	KPT_LIST="`cat High_symm/4.kpt`"
+	
 done
 
 
