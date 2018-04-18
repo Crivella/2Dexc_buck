@@ -182,7 +182,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	BAND_OUT="after_band.dat"
 	#qepp_plotband.x $OUT $BAND_OUT
 
-	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$VB" -e "OUTNAME='prova.pdf'" emass_fit.gnu
+	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$VB" -e "OUTNAME='prova_vb.pdf'" emass_fit.gnu
+	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$CB" -e "OUTNAME='prova_cb.pdf'" emass_fit.gnu
 
 	#DEGENERAZIONE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
