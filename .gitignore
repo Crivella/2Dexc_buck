@@ -3,4 +3,5 @@
 tmp
 *.in*
 *.dat*
-matrixelemets
+matrixelements
+*.pdf

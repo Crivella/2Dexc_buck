@@ -23,13 +23,13 @@ cat > $IN << EOF
     wf_collect        = .true.
 /
 &system
-    ibrav             = 4
+    ibrav             = $ibrav
     celldm(1)         = $alat
     celldm(3)         =  $cdim3
     nat               =  2
     ntyp              = 2
     ecutwfc           =  $cutoff
-    nbnd              = 20
+    nbnd              = $nbnd
    ! smearing          = 'fermi-dirac'
    ! degauss           = 0.0036749326
 /
@@ -85,6 +85,8 @@ echo -e "# buckling(bohr) Etot(Ry)" > $SAVE
 cutoff=30 #100
 alat=5.72
 cdim3=6
+nbnd=20
+ibrav=4
 #Cycle over different bucklings
 for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	buck_bohr=`echo $buck*$alat | bc -l`
@@ -117,7 +119,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	OUT=${PREFIX}_script.nscf_b${buck}.out
 
 	KPT_MODE=""
-	KPT_LIST="`cat High_symm/4.kpt`"
+	KPT_LIST="`cat High_symm/$ibrav.kpt`"
 
 	print_in_pw nscf
 
@@ -127,7 +129,72 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
-	qepp_plotband.x $OUT bands_b${buck}_plotted.dat
+	#Make the band plot 
+	BAND_OUT="bands_b${buck}_plotted.dat"
+	#qepp_plotband.x $OUT $BAND_OUT
+	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$nbnd" plot.gnu
+
+	###################################################################################
+	#Calcolate effective mass
+	#Determine the position of the smallest direct gap
+	smallest_gap.x $OUT > tmp_gap.out 2>&1
+	N_KPT_MINGAP=`cat tmp_gap.out | grep "Min gap energy:" -A 1 | tail -n 1 | cut -d# -f2  | tr -dc '0-9,-.'`
+	rm tmp_gap.out
+
+	AFTER=$N_KPT_MINGAP
+	let AFTER++
+	BEFORE=$N_KPT_MINGAP
+	let BEFORE--
+
+	if [[ $BEFORE == "0" ]]; then
+		NUM_KPT=`cat High_symm/$ibrav.kpt | grep -v "#" | wc -l`
+		let NUM_KPT--
+		let NUM_KPT--
+		let NUM_KPT--
+		BEFORE=$NUM_KPT
+	fi
+
+	echo "$BEFORE $N_KPT_MINGAP $AFTER"
+
+	START=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $N_KPT_MINGAP | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
+	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $AFTER | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
+
+	#Performe calculation with dense k-point near minimum
+	IN=${PREFIX}_script.after_b${buck}.in
+	OUT=${PREFIX}_script.after_b${buck}.out
+
+	KPT_MODE="K_POINTS {crystal_b}"
+	KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
+
+	print_in_pw nscf
+
+	echo -e "\tStart: " `date`
+	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
+	echo -e "\t\t$COMMAND < $IN > $OUT"
+	#$COMMAND < $IN > $OUT
+	echo -e "\tEnd: " `date`
+
+	qepp_plotband.x $OUT after_band.dat
+
+	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $BEFORE | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
+
+	IN=${PREFIX}_script.before_b${buck}.in
+	OUT=${PREFIX}_script.before_b${buck}.out
+
+	KPT_MODE="K_POINTS {crystal_b}"
+	KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
+
+	print_in_pw nscf
+
+	echo -e "\tStart: " `date`
+	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
+	echo -e "\t\t$COMMAND < $IN > $OUT"
+	#$COMMAND < $IN > $OUT
+	echo -e "\tEnd: " `date`
+
+	qepp_plotband.x $OUT before_band.dat
+
+
 
 	####################################################################################
 	#Run pw2gw for optical properties
@@ -159,8 +226,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
-	eps_average.x epsX.dat epsY.dat
-	apply_kk_im.x averaged.dat real_xy.dat 1
+	#eps_average.x epsX.dat epsY.dat
+	#apply_kk_im.x averaged.dat real_xy.dat 1
 
 	EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 	VACUUM=`echo "$cdim3 * $alat" | bc -l`
