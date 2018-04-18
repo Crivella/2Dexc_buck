@@ -136,11 +136,14 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	###################################################################################
 	#Calcolate effective mass
-	#Determine the position of the smallest direct gap
+	#Determine the position of the smallest direct gap and valence and conduction band number
 	smallest_gap.x $OUT > tmp_gap.out 2>&1
 	N_KPT_MINGAP=`cat tmp_gap.out | grep "Min gap energy:" -A 1 | tail -n 1 | cut -d# -f2  | tr -dc '0-9,-.'`
+	VB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f3 | tr -dc '0-9'`
+	CB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f6 | tr -dc '0-9'`
 	rm tmp_gap.out
 
+	#extract kpt before and after the minimum
 	AFTER=$N_KPT_MINGAP
 	let AFTER++
 	BEFORE=$N_KPT_MINGAP
@@ -154,12 +157,14 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 		BEFORE=$NUM_KPT
 	fi
 
+	echo "vb = $VB,    cb= $CB"
 	echo "$BEFORE $N_KPT_MINGAP $AFTER"
 
 	START=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $N_KPT_MINGAP | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
+	
+	#Performe calculation with dense k-point near minimum after
 	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $AFTER | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
 
-	#Performe calculation with dense k-point near minimum
 	IN=${PREFIX}_script.after_b${buck}.in
 	OUT=${PREFIX}_script.after_b${buck}.out
 
@@ -174,8 +179,14 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
-	qepp_plotband.x $OUT after_band.dat
+	BAND_OUT="after_band.dat"
+	#qepp_plotband.x $OUT $BAND_OUT
 
+	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$VB" -e "OUTNAME='prova.pdf'" emass_fit.gnu
+
+	#DEGENERAZIONE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	#Performe calculation with dense k-point near minimum before
 	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $BEFORE | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
 
 	IN=${PREFIX}_script.before_b${buck}.in
