@@ -5,6 +5,8 @@ set encoding utf8
 set termoption dashed
 
 set output OUTNAME
+set print "app.dat"
+set fit quiet
 
 stats FILE u 1:5 nooutput
 
@@ -25,9 +27,9 @@ if ( abs( app1 - xmin) < abs( app2 -xmin)) {
 d=1E-3
 f(x) = a + b * x + c * x**2 + d * x**3
 
-set fit quiet
-
 fit f(x) FILE u 1:(column(NBND)) via a,b,c,d
+
+print c
 
 set xrange [xmin:xmax]
 set yrange [*:*]

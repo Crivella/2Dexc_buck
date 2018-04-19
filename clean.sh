@@ -5,7 +5,7 @@ find . -name "*_script*" -print -exec rm {} \;
 find . -name "*.ps*" -print -exec rm {} \;
 find . -name "*.xmgr*" -print -exec rm {} \;
 find . -name "*.rap*" -print -exec rm {} \;
-find . -name "*.plot*" -print -exec rm {} \;
+#find . -name "*.plot*" -print -exec rm {} \;
 find . -name "tmp" -print -exec rm -r {} \;
 find . -name "*~" -print -exec rm {} \;
 find . -name "*.log" -print -exec rm {} \;
