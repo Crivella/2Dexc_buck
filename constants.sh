@@ -1,0 +1,3 @@
+export PI=3.14159265359
+export HA_to_EV=27.211385
+
