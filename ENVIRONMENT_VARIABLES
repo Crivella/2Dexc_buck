@@ -1,3 +1,6 @@
+#Set the locale for numbers
+LC_NUMERIC=en_US.UTF-8
+
 #The ABSOLUTE PATH of the bin folder containing the QE executables (pw.x, pp.x)
 BIN_DIR=/home/crivella/Downloads/Espresso/espresso-6.0/bin
 
