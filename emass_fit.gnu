@@ -25,6 +25,8 @@ if ( abs( app1 - xmin) < abs( app2 -xmin)) {
 d=1E-3
 f(x) = a + b * x + c * x**2 + d * x**3
 
+set fit quiet
+
 fit f(x) FILE u 1:(column(NBND)) via a,b,c,d
 
 set xrange [xmin:xmax]

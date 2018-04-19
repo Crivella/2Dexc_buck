@@ -19,16 +19,16 @@ cat > $IN << EOF
     pseudo_dir        = '$PSEUDO_DIR'
     outdir            = '$TMP_DIR'
     verbosity         = 'high'
-    disk_io = 'minimal'
+    disk_io           = 'minimal'
     wf_collect        = .true.
 /
 &system
     ibrav             = $ibrav
     celldm(1)         = $alat
-    celldm(3)         =  $cdim3
-    nat               =  2
+    celldm(3)         = $cdim3
+    nat               = 2
     ntyp              = 2
-    ecutwfc           =  $cutoff
+    ecutwfc           = $cutoff
     nbnd              = $nbnd
    ! smearing          = 'fermi-dirac'
    ! degauss           = 0.0036749326
@@ -91,6 +91,9 @@ ibrav=4
 for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	buck_bohr=`echo $buck*$alat | bc -l`
 	buck_bohr=`printf %.4f $buck_bohr`
+	echo -e "\t*************************************************************************"
+	echo -e "\tRunning scf calculation buckling=${buck_bohr} bohr                       "
+	echo -e "\t*************************************************************************"
 
 	IN=${PREFIX}_script.scf_b${buck}.in
 	OUT=${PREFIX}_script.scf_b${buck}.out
@@ -104,8 +107,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	#Build commmand for pw.x and execute
 	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t\t$COMMAND < $IN > $OUT"
+	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
+	echo -e "\t  $COMMAND < $IN > $OUT"
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
@@ -115,6 +118,10 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	###################################################################################
 	#Run band calculation
+	echo -e "\n"
+	echo -e "\t*************************************************************************"
+	echo -e "\tRunning band structure calculation for high-symmetry path of ibrav=$ibrav"
+	echo -e "\t*************************************************************************"
 	IN=${PREFIX}_script.nscf_b${buck}.in
 	OUT=${PREFIX}_script.nscf_b${buck}.out
 
@@ -124,24 +131,39 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	print_in_pw nscf
 
 	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t\t$COMMAND < $IN > $OUT"
+	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
+	echo -e "\t  $COMMAND < $IN > $OUT"
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 	#Make the band plot 
 	BAND_OUT="bands_b${buck}_plotted.dat"
+	echo -e "\tqepp_plotband.x $OUT $BAND_OUT"
 	#qepp_plotband.x $OUT $BAND_OUT
+	echo -e "\tgnuplot -e \"FILE='$BAND_OUT'\" -e \"NBND=$nbnd\" plot.gnu"
 	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$nbnd" plot.gnu
 
 	###################################################################################
 	#Calcolate effective mass
 	#Determine the position of the smallest direct gap and valence and conduction band number
+	echo -e "\n"
+	echo -e "\t*************************************************************************"
+	echo -e "\tStarting the calcuations for the effective mass                          "
+	echo -e "\t*************************************************************************"
+	echo -e "\tsmallest_gap.x $OUT > tmp_gap.out 2>&1"
 	smallest_gap.x $OUT > tmp_gap.out 2>&1
 	N_KPT_MINGAP=`cat tmp_gap.out | grep "Min gap energy:" -A 1 | tail -n 1 | cut -d# -f2  | tr -dc '0-9,-.'`
 	VB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f3 | tr -dc '0-9'`
 	CB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f6 | tr -dc '0-9'`
 	rm tmp_gap.out
+
+	NUM_KPT=`cat High_symm/$ibrav.kpt | grep -v "#" | wc -l`
+	let NUM_KPT-- #Do not count 1st line (K_POINTS {...})
+	let NUM_KPT-- #Do not count 2nd line (Number of k-points)
+	echo ""
+	echo -e "\tMinimal direct gap at kpt number $N_KPT_MINGAP (of $NUM_KPT)"
+	echo -e "\tvb = $VB,    cb= $CB"
+	let NUM_KPT-- #Do not count last line (By convention the k-path ends with the same point it start with)
 
 	#extract kpt before and after the minimum
 	AFTER=$N_KPT_MINGAP
@@ -150,46 +172,76 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	let BEFORE--
 
 	if [[ $BEFORE == "0" ]]; then
-		NUM_KPT=`cat High_symm/$ibrav.kpt | grep -v "#" | wc -l`
-		let NUM_KPT--
-		let NUM_KPT--
-		let NUM_KPT--
 		BEFORE=$NUM_KPT
 	fi
 
-	echo "vb = $VB,    cb= $CB"
-	echo "$BEFORE $N_KPT_MINGAP $AFTER"
+	echo -e "\tMaking nscf calculaiton with dense line from kpt $N_KPT_MINGAP -> $AFTER"
+	echo -e "\t                                                 $N_KPT_MINGAP -> $BEFORE"
 
+	#Read starting point from the High_symm k-path
 	START=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $N_KPT_MINGAP | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
 	
-	#Performe calculation with dense k-point near minimum after
-	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $AFTER | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
+	for app in $AFTER $BEFORE; do
+		END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $app | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
+		echo -e "\tRunning direction $START -> $END"
 
-	IN=${PREFIX}_script.after_b${buck}.in
-	OUT=${PREFIX}_script.after_b${buck}.out
+		IN=${PREFIX}_script.nscf_kpt${N_KPT_MINGAP}to${app}_b${buck}.in
+		OUT=${PREFIX}_script.nscf_kpt${N_KPT_MINGAP}to${app}_b${buck}.out
 
-	KPT_MODE="K_POINTS {crystal_b}"
-	KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
+		KPT_MODE="K_POINTS {crystal_b}"
+		KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
 
-	print_in_pw nscf
+		print_in_pw nscf
 
-	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t\t$COMMAND < $IN > $OUT"
-	#$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date`
+		echo -e "\tStart: " `date`
+		COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
+		echo -e "\t  $COMMAND < $IN > $OUT"
+		#$COMMAND < $IN > $OUT
+		echo -e "\tEnd: " `date`
 
-	BAND_OUT="after_band.dat"
-	#qepp_plotband.x $OUT $BAND_OUT
+		BAND_OUT="kpt${N_KPT_MINGAP}to${app}_band.dat"
+		#qepp_plotband.x $OUT $BAND_OUT
 
-	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$VB" -e "OUTNAME='prova_vb.pdf'" emass_fit.gnu
-	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$CB" -e "OUTNAME='prova_cb.pdf'" emass_fit.gnu
+		gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($VB+1))" -e "OUTNAME='${BAND_OUT:0: -4}_vb.pdf'" emass_fit.gnu
+		gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($CB+1))" -e "OUTNAME='${BAND_OUT:0: -4}_cb.pdf'" emass_fit.gnu
 
-	#DEGENERAZIONE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		MIN_LINE=`cat $BAND_OUT | head -n $N_KPT_MINGAP | tail -n 1 |  cut -d$'\t' -f 2`
+		E_VB=`echo $MIN_LINE | cut -d" " -f $VB`
+		E_VB_1=`echo $MIN_LINE | cut -d" " -f $(($VB-1))`
+		DIFF=`echo "$E_VB - $E_VB_1" | bc -l`
 
+		echo -e "\n\t*** Looking for degeneracy of the valence band ***"
+		echo -e "\t  e(vb-1) = $E_VB_1,    e(vb) = $E_VB  ->  $DIFF"
+		if (( `echo "$DIFF<0.001" | bc -l` )); then
+			DEGEN=1
+			echo -e "\t  Degeneracy found within the 1meV limit..."
+			echo -e "\t  running fit of the vb-1 band"
+			gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($VB+0))" -e "OUTNAME='${BAND_OUT:0: -4}_vb-1.pdf'" emass_fit.gnu
+		else
+			echo -e "\t  No degeneracy for the valence band"
+			echo -e "\t  vb and vb-1 are split more than 1meV"
+		fi
+
+		E_CB=`echo $MIN_LINE | cut -d" " -f $CB`
+		E_CB_1=`echo $MIN_LINE | cut -d" " -f $(($CB+1))`
+		DIFF=`echo "$E_CB_1 - $E_CB" | bc -l`
+		echo -e "\n\t*** Looking for degeneracy of the conduction band ***"
+		echo -e "\t  e(cb) = $E_CB,    e(cb+1) = $E_CB  ->  $DIFF"
+		if (( `echo "$DIFF<0.001" | bc -l` )); then
+			DEGEN=1
+			echo -e "\t  Degeneracy found within the 1meV limit..."
+			echo -e "\t  running fit of the vb-1 band"
+			gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($CB+2))" -e "OUTNAME='${BAND_OUT:0: -4}_cb-1.pdf'" emass_fit.gnu
+		else
+			echo -e "\t  No degeneracy for the conduction band"
+			echo -e "\t  vb and vb-1 are split more than 1meV"
+		fi
+
+	done
 	#Performe calculation with dense k-point near minimum before
 	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $BEFORE | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
 
+: '
 	IN=${PREFIX}_script.before_b${buck}.in
 	OUT=${PREFIX}_script.before_b${buck}.out
 
@@ -199,13 +251,13 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	print_in_pw nscf
 
 	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t\t$COMMAND < $IN > $OUT"
+	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
+	echo -e "\t  $COMMAND < $IN > $OUT"
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
-	qepp_plotband.x $OUT before_band.dat
-
+	#qepp_plotband.x $OUT before_band.dat
+' > /dev/null
 
 
 	####################################################################################
@@ -220,8 +272,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	print_in_pw nscf
 
 	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t\t$COMMAND < $IN > $OUT"
+	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
+	echo -e "\t  $COMMAND < $IN > $OUT"
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
@@ -233,8 +285,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	print_in_pw2gw
 
 	echo -e "\tStart: " `date`
-	COMMAND="  $RUN_COMMAND $BIN_DIR/pw2gw_new.x"
-	echo -e "\t\t$COMMAND < $IN > $OUT"
+	COMMAND="$RUN_COMMAND $BIN_DIR/pw2gw_new.x"
+	echo -e "\t $COMMAND < $IN > $OUT"
 	#$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
