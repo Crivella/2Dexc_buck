@@ -64,7 +64,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	#Make the band plot 
 	BAND_OUT="bands_b${buck}_plotted.dat"
 	do_command "qepp_plotband.x $OUT $BAND_OUT" "null"  $BRIGHT_GREEN
-	do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd plot.gnu" ""  $BRIGHT_GREEN
+	do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd bands.gnu" ""  $BRIGHT_GREEN
 
 
 	###################################################################################
