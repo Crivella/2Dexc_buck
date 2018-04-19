@@ -7,6 +7,8 @@ echo "TMP_DIR:" $TMP_DIR
 echo "Parallel command:" $RUN_COMMAND
 echo "Started at: " `date`
 
+START_TIME=`date +%s.%N`
+
 function print_in_pw()
 {
 cat > $IN << EOF
@@ -106,11 +108,11 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	print_in_pw scf
 
 	#Build commmand for pw.x and execute
-	echo -e "\tStart: " `date`
+	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t  $COMMAND < $IN > $OUT"
 	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date`
+	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 
 	#Extract total energy from output and print it in a two-coloumn file with the buckling
 	ENERGY=`cat $OUT | grep ! | tr -dc '0-9,-.'`
@@ -130,11 +132,11 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	print_in_pw nscf
 
-	echo -e "\tStart: " `date`
+	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t  $COMMAND < $IN > $OUT"
 	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date`
+	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 
 	#Make the band plot 
 	BAND_OUT="bands_b${buck}_plotted.dat"
@@ -193,11 +195,11 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 		print_in_pw nscf
 
-		echo -e "\tStart: " `date`
+		echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 		COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 		echo -e "\t  $COMMAND < $IN > $OUT"
 		$COMMAND < $IN > $OUT
-		echo -e "\tEnd: " `date`
+		echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 
 		BAND_OUT="kpt${N_KPT_MINGAP}to${app}_band.dat"
 		echo -e "\tqepp_plotband.x $OUT $BAND_OUT"
@@ -281,11 +283,11 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	print_in_pw nscf
 
-	echo -e "\tStart: " `date`
+	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t  $COMMAND < $IN > $OUT"
 	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date`
+	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 
 
 	#Run pw2gw
@@ -294,11 +296,11 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	print_in_pw2gw
 
-	echo -e "\tStart: " `date`
+	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw2gw_new.x"
 	echo -e "\t $COMMAND < $IN > $OUT"
 	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date`
+	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 
 	echo -e "\teps_average.x epsX.dat epsY.dat"
 	eps_average.x epsX.dat epsY.dat
@@ -315,6 +317,7 @@ done
 
 
 echo -e "\nEnd at: $(date)"
+echo -e "Total run time: " `echo "$(date +%s.%N) - $START_TIME" | bc -l`
 echo -e "\n\n"
 
 
