@@ -100,7 +100,7 @@ for alat in $ALAT_LIST; do
 
 		DESCRIPT="a${alat}_b${buck}"
 
-		print_str "Running scf calculation buckling=${buck_bohr} bohr" "title" $YELLOW
+		print_str "Running scf calculation alat=${alat} (bohr)   buckling=${buck_bohr} (bohr)" "title" $YELLOW
 
 		IN=${PREFIX}_script.${DESCRIPT}_scf.in
 		OUT=${PREFIX}_script.${DESCRIPT}_scf.out
@@ -134,7 +134,7 @@ for alat in $ALAT_LIST; do
 		#Make the band plot 
 		BAND_OUT="bands_b${buck}_plotted.dat"
 		do_command "qepp_plotband.x $OUT $BAND_OUT" "null"  $BRIGHT_GREEN
-		do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd bands.gnu -e OUTNAME=${DESCRIPT}_bands.pdf" ""  $BRIGHT_GREEN
+		do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd -e OUTNAME='${DESCRIPT}_bands.pdf' bands.gnu" ""  $BRIGHT_GREEN
 
 
 		###################################################################################
@@ -270,7 +270,7 @@ for alat in $ALAT_LIST; do
 		OUT=${PREFIX}_script.${DESCRIPT}_nscf-opt.out
 
 		KPT_MODE="K_POINTS {automatic}"
-		KPT_LIST="30 30 1 0 0 0"
+		KPT_LIST="15 15 1 0 0 0"
 
 		print_in_pw nscf
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
@@ -296,7 +296,7 @@ for alat in $ALAT_LIST; do
 
 		####################################################################################
 		# Report and final data manipulation
-		print_str "Final report for buckling = $buck_bohr (bohr)" "title" $YELLOW
+		print_str "Final report for alat=${alat} (bohr)   buckling = $buck_bohr (bohr)" "title" $YELLOW
 		print_str "m_h = $MASS_VB    m_e = $MASS_CB   red_mass = $MU" "sub" $CYAN
 		print_str "alfa_0 = $ALFA0" "sub" $CYAN
 
@@ -314,7 +314,9 @@ for alat in $ALAT_LIST; do
 		rex=`echo "$rex_Aex * $Aex" | bc -l`
 		print_str "EXC:  Binding = $Eb   radius = $rex" "sub" $CYAN
 	done
+	let TAB_C--
 done
+let TAB_C--
 
 
 echo -e "\nEnd at: $(date)"
