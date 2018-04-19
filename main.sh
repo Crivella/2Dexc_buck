@@ -109,7 +109,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	echo -e "\tStart: " `date`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t  $COMMAND < $IN > $OUT"
-	#$COMMAND < $IN > $OUT
+	$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 	#Extract total energy from output and print it in a two-coloumn file with the buckling
@@ -133,13 +133,13 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	echo -e "\tStart: " `date`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t  $COMMAND < $IN > $OUT"
-	#$COMMAND < $IN > $OUT
+	$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 	#Make the band plot 
 	BAND_OUT="bands_b${buck}_plotted.dat"
 	echo -e "\tqepp_plotband.x $OUT $BAND_OUT"
-	#qepp_plotband.x $OUT $BAND_OUT
+	qepp_plotband.x $OUT $BAND_OUT
 	echo -e "\tgnuplot -e \"FILE='$BAND_OUT'\" -e \"NBND=$nbnd\" plot.gnu"
 	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$nbnd" plot.gnu
 
@@ -196,12 +196,16 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 		echo -e "\tStart: " `date`
 		COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 		echo -e "\t  $COMMAND < $IN > $OUT"
-		#$COMMAND < $IN > $OUT
+		$COMMAND < $IN > $OUT
 		echo -e "\tEnd: " `date`
 
 		BAND_OUT="kpt${N_KPT_MINGAP}to${app}_band.dat"
-		#qepp_plotband.x $OUT $BAND_OUT
+		echo -e "\tqepp_plotband.x $OUT $BAND_OUT"
+		qepp_plotband.x $OUT $BAND_OUT
 
+		#echo -e "\tgnuplot -e \"FILE='$BAND_OUT'\" -e \"NBND=$(($VB+1))\" -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
+		echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
+		echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
 		gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($VB+1))" -e "OUTNAME='${BAND_OUT:0: -4}_vb.pdf'" emass_fit.gnu
 		gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($CB+1))" -e "OUTNAME='${BAND_OUT:0: -4}_cb.pdf'" emass_fit.gnu
 
@@ -216,6 +220,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 			DEGEN=1
 			echo -e "\t  Degeneracy found within the 1meV limit..."
 			echo -e "\t  running fit of the vb-1 band"
+			echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
 			gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($VB+0))" -e "OUTNAME='${BAND_OUT:0: -4}_vb-1.pdf'" emass_fit.gnu
 		else
 			echo -e "\t  No degeneracy for the valence band"
@@ -231,6 +236,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 			DEGEN=1
 			echo -e "\t  Degeneracy found within the 1meV limit..."
 			echo -e "\t  running fit of the vb-1 band"
+			echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
 			gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($CB+2))" -e "OUTNAME='${BAND_OUT:0: -4}_cb-1.pdf'" emass_fit.gnu
 		else
 			echo -e "\t  No degeneracy for the conduction band"
@@ -263,6 +269,10 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	####################################################################################
 	#Run pw2gw for optical properties
 	#Run nscf calculation
+	echo -e "\n"
+	echo -e "\t*************************************************************************"
+	echo -e "\tStarting the calcuations for the alfa0                                   "
+	echo -e "\t*************************************************************************"
 	IN=${PREFIX}_script.nscf-opt_b${buck}.in
 	OUT=${PREFIX}_script.nscf-opt_b${buck}.out
 
@@ -274,7 +284,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	echo -e "\tStart: " `date`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
 	echo -e "\t  $COMMAND < $IN > $OUT"
-	#$COMMAND < $IN > $OUT
+	$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
 
@@ -287,26 +297,25 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	echo -e "\tStart: " `date`
 	COMMAND="$RUN_COMMAND $BIN_DIR/pw2gw_new.x"
 	echo -e "\t $COMMAND < $IN > $OUT"
-	#$COMMAND < $IN > $OUT
+	$COMMAND < $IN > $OUT
 	echo -e "\tEnd: " `date`
 
-	#eps_average.x epsX.dat epsY.dat
-	#apply_kk_im.x averaged.dat real_xy.dat 1
+	echo -e "\teps_average.x epsX.dat epsY.dat"
+	eps_average.x epsX.dat epsY.dat
+	echo -e "\tapply_kk_im.x averaged.dat real_xy.dat 1"
+	apply_kk_im.x averaged.dat real_xy.dat 1
 
 	EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 	VACUUM=`echo "$cdim3 * $alat" | bc -l`
 	ALFA0=`echo "$EPS0 * $VACUUM / (4 * 3.141592)" | bc -l`
 	ALFA0=`printf %.5f $ALFA0`
 
-	echo "alfa0 is    $ALFA0"
+	echo -e"\n\tALFA0 = $ALFA0"
 done
 
 
-
-
-
-
-echo "End at: $(date)"
+echo -e "\nEnd at: $(date)"
+echo -e "\n\n"
 
 
 
