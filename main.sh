@@ -5,9 +5,79 @@ echo "BIN_DIR:" $BIN_DIR
 echo "PSEUDO_DIR:" $PSEUDO_DIR
 echo "TMP_DIR:" $TMP_DIR
 echo "Parallel command:" $RUN_COMMAND
-echo "Started at: " `date`
 
-START_TIME=`date +%s.%N`
+
+export ANSII_RESET="\x1B[0m"
+export ANSII_F_BLACK="\x1B[30m"
+export ANSII_F_RED="\x1B[31m"
+export ANSII_F_GREEN="\x1B[32m"
+export ANSII_F_YELLOW="\x1B[33m"
+export ANSII_F_BLUE="\x1B[34m"
+export ANSII_F_MAGENTA="\x1B[35m"
+export ANSII_F_CYAN="\x1B[36m"
+export ANSII_F_WHITE="\x1B[37m"
+
+export ANSII_F_BRIGHT_RED="\x1B[38;2;255;0;0m"
+export ANSII_F_BRIGHT_GREEN="\x1B[38;2;0;255;0m"
+export ANSII_F_BRIGHT_BLUE="\x1B[38;2;0;0;255m"
+export ANSII_F_BRIGHT_CYAN="\x1B[38;2;0;255;255m"
+
+function set_tab()
+{
+	TAB=""
+	C=0
+	while (( $C < $1 )); do
+		let C++
+		TAB="${TAB}\t"
+	done
+}
+
+function print_str()
+{
+	if [[ `echo $2 | grep -i "title"` != "" ]]; then
+		echo -e "${TAB}*************************************************************************"
+	fi
+
+	if [[ `echo $2 | grep -i "sub"` != "" ]]; then
+		echo -e "${TAB}${ANSII_F_RED}***${ANSII_RESET} ${3}${1} ${ANSII_F_RED}***${ANSII_RESET}"
+	else
+		echo -e "${TAB}${3}${1}${ANSII_RESET}"
+	fi
+
+	if [[ `echo $2 | grep -i "title"` != "" ]]; then
+		echo -e "${TAB}*************************************************************************"
+	fi
+}
+
+function do_command()
+{
+	COMMAND="$1"
+	if [[ `echo $2 | grep -i "date"` != "" ]]; then
+		echo -e "${TAB}Start: " `date` "   Total run time: " `echo "$(date +%s.%N) - $START_TIME" | bc -l` "s"
+	fi
+	
+	if [[ `echo $2 | grep -i "io"` != "" ]]; then
+		if [[ ${IN} != "" ]]; then
+			echo -e "${TAB}  ${3}${COMMAND} < ${IN} > ${OUT}${ANSII_RESET}"
+			${COMMAND} < ${IN} > ${OUT}
+		else
+			echo -e "${TAB}  ${3}${COMMAND} > ${OUT}${ANSII_RESET}"
+			${COMMAND} > ${OUT} 2>&1
+		fi
+	else
+		if [[ `echo $2 | grep -i "null"` != "" ]]; then
+			echo -e "${TAB}  ${3}${COMMAND} > /dev/null 2>&1${ANSII_RESET}"
+			$COMMAND  > /dev/null 2>&1
+		else
+			echo -e "${TAB}  ${3}${COMMAND}${ANSII_RESET}"
+			$COMMAND
+		fi
+	fi
+
+	if [[ `echo $2 | grep "date"` != "" ]]; then
+		echo -e "${TAB}End: " `date` "   Total run time: " `echo "$(date +%s.%N) - $START_TIME" | bc -l` "s"
+	fi
+}
 
 function print_in_pw()
 {
@@ -78,6 +148,12 @@ EOF
 
 export -f print_in_pw
 export -f print_in_pw2gw
+export -f do_command
+export -f print_str
+
+set_tab 0
+echo "Started at: " `date`
+START_TIME=`date +%s.%N`
 
 PREFIX="AlN"
 
@@ -91,11 +167,11 @@ nbnd=20
 ibrav=4
 #Cycle over different bucklings
 for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
+	set_tab 1
 	buck_bohr=`echo $buck*$alat | bc -l`
 	buck_bohr=`printf %.4f $buck_bohr`
-	echo -e "\t*************************************************************************"
-	echo -e "\tRunning scf calculation buckling=${buck_bohr} bohr                       "
-	echo -e "\t*************************************************************************"
+
+	print_str "Running scf calculation buckling=${buck_bohr} bohr" "title" $ANSII_F_YELLOW
 
 	IN=${PREFIX}_script.scf_b${buck}.in
 	OUT=${PREFIX}_script.scf_b${buck}.out
@@ -106,13 +182,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 
 	#Print input for scf
 	print_in_pw scf
-
-	#Build commmand for pw.x and execute
-	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
-	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t  $COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
+	#Run command for QE
+	do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $ANSII_F_BRIGHT_GREEN
 
 	#Extract total energy from output and print it in a two-coloumn file with the buckling
 	ENERGY=`cat $OUT | grep ! | tr -dc '0-9,-.'`
@@ -121,9 +192,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	###################################################################################
 	#Run band calculation
 	echo -e "\n"
-	echo -e "\t*************************************************************************"
-	echo -e "\tRunning band structure calculation for high-symmetry path of ibrav=$ibrav"
-	echo -e "\t*************************************************************************"
+	print_str "Running band structure calculation for high-symmetry path of ibrav=$ibrav" "title" $ANSII_F_YELLOW
 	IN=${PREFIX}_script.nscf_b${buck}.in
 	OUT=${PREFIX}_script.nscf_b${buck}.out
 
@@ -131,29 +200,24 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	KPT_LIST="`cat High_symm/$ibrav.kpt`"
 
 	print_in_pw nscf
-
-	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
-	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t  $COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
+	do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $ANSII_F_BRIGHT_GREEN
 
 	#Make the band plot 
 	BAND_OUT="bands_b${buck}_plotted.dat"
-	echo -e "\tqepp_plotband.x $OUT $BAND_OUT"
-	qepp_plotband.x $OUT $BAND_OUT
-	echo -e "\tgnuplot -e \"FILE='$BAND_OUT'\" -e \"NBND=$nbnd\" plot.gnu"
-	gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$nbnd" plot.gnu
+	do_command "qepp_plotband.x $OUT $BAND_OUT" "null"  $ANSII_F_BRIGHT_GREEN
+	do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd plot.gnu" ""  $ANSII_F_BRIGHT_GREEN
+
 
 	###################################################################################
 	#Calcolate effective mass
 	#Determine the position of the smallest direct gap and valence and conduction band number
 	echo -e "\n"
-	echo -e "\t*************************************************************************"
-	echo -e "\tStarting the calcuations for the effective mass                          "
-	echo -e "\t*************************************************************************"
-	echo -e "\tsmallest_gap.x $OUT > tmp_gap.out 2>&1"
-	smallest_gap.x $OUT > tmp_gap.out 2>&1
+	print_str "Starting the calcuations for the effective mass" $ANSII_F_YELLOW
+	IN=""
+	APP="$OUT"
+	OUT="tmp_gap.out"
+	do_command "smallest_gap.x $APP" "io null" $ANSII_F_BRIGHT_GREEN
+
 	N_KPT_MINGAP=`cat tmp_gap.out | grep "Min gap energy:" -A 1 | tail -n 1 | cut -d# -f2  | tr -dc '0-9,-.'`
 	VB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f3 | tr -dc '0-9'`
 	CB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f6 | tr -dc '0-9'`
@@ -163,8 +227,8 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	let NUM_KPT-- #Do not count 1st line (K_POINTS {...})
 	let NUM_KPT-- #Do not count 2nd line (Number of k-points)
 	echo ""
-	echo -e "\tMinimal direct gap at kpt number $N_KPT_MINGAP (of $NUM_KPT)"
-	echo -e "\tvb = $VB,    cb= $CB"
+	print_str "Minimal direct gap at kpt number $N_KPT_MINGAP (of $NUM_KPT)"
+	print_str "vb = $VB,    cb= $CB"
 	let NUM_KPT-- #Do not count last line (By convention the k-path ends with the same point it start with)
 
 	#extract kpt before and after the minimum
@@ -177,15 +241,15 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 		BEFORE=$NUM_KPT
 	fi
 
-	echo -e "\tMaking nscf calculaiton with dense line from kpt $N_KPT_MINGAP -> $AFTER"
-	echo -e "\t                                                 $N_KPT_MINGAP -> $BEFORE"
+	print_str "Making nscf calculaiton with dense line from kpt $N_KPT_MINGAP -> $AFTER"
+	print_str "                                                 $N_KPT_MINGAP -> $BEFORE"
 
 	#Read starting point from the High_symm k-path
 	START=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $N_KPT_MINGAP | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
 	
 	for app in $AFTER $BEFORE; do
 		END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $app | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
-		echo -e "\tRunning direction $START -> $END"
+		echo -e "${TAB}Running direction $START -> $END"
 
 		IN=${PREFIX}_script.nscf_kpt${N_KPT_MINGAP}to${app}_b${buck}.in
 		OUT=${PREFIX}_script.nscf_kpt${N_KPT_MINGAP}to${app}_b${buck}.out
@@ -194,87 +258,58 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 		KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
 
 		print_in_pw nscf
-
-		echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
-		COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
-		echo -e "\t  $COMMAND < $IN > $OUT"
-		$COMMAND < $IN > $OUT
-		echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
+		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $ANSII_F_BRIGHT_GREEN
 
 		BAND_OUT="kpt${N_KPT_MINGAP}to${app}_band.dat"
-		echo -e "\tqepp_plotband.x $OUT $BAND_OUT"
-		qepp_plotband.x $OUT $BAND_OUT
-
-		#echo -e "\tgnuplot -e \"FILE='$BAND_OUT'\" -e \"NBND=$(($VB+1))\" -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
-		echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
-		echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
-		gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($VB+1))" -e "OUTNAME='${BAND_OUT:0: -4}_vb.pdf'" emass_fit.gnu
-		gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($CB+1))" -e "OUTNAME='${BAND_OUT:0: -4}_cb.pdf'" emass_fit.gnu
+		do_command "qepp_plotband.x $OUT $BAND_OUT" "null" $ANSII_F_BRIGHT_GREEN
+		do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $ANSII_F_BRIGHT_GREEN
+		do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $ANSII_F_BRIGHT_GREEN
 
 		MIN_LINE=`cat $BAND_OUT | head -n $N_KPT_MINGAP | tail -n 1 |  cut -d$'\t' -f 2`
 		E_VB=`echo $MIN_LINE | cut -d" " -f $VB`
 		E_VB_1=`echo $MIN_LINE | cut -d" " -f $(($VB-1))`
 		DIFF=`echo "$E_VB - $E_VB_1" | bc -l`
 
-		echo -e "\n\t*** Looking for degeneracy of the valence band ***"
-		echo -e "\t  e(vb-1) = $E_VB_1,    e(vb) = $E_VB  ->  $DIFF"
+		print_str "Looking for degeneracy of the valence band" "sub"
+		print_str "  e(vb-1) = $E_VB_1,    e(vb) = $E_VB  ->  $DIFF"
 		if (( `echo "$DIFF<0.001" | bc -l` )); then
 			DEGEN=1
-			echo -e "\t  Degeneracy found within the 1meV limit..."
-			echo -e "\t  running fit of the vb-1 band"
-			echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
-			gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($VB+0))" -e "OUTNAME='${BAND_OUT:0: -4}_vb-1.pdf'" emass_fit.gnu
+			print_str "  Degeneracy found within the 1meV limit.."
+			print_str "  running fit of the vb-1 band"
+			print_str "gnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
+			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+0)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $ANSII_F_BRIGHT_GREEN
 		else
-			echo -e "\t  No degeneracy for the valence band"
-			echo -e "\t  vb and vb-1 are split more than 1meV"
+			print_str "  No degeneracy for the valence band"
+			print_str "  vb and vb-1 are split more than 1meV"
 		fi
 
 		E_CB=`echo $MIN_LINE | cut -d" " -f $CB`
 		E_CB_1=`echo $MIN_LINE | cut -d" " -f $(($CB+1))`
 		DIFF=`echo "$E_CB_1 - $E_CB" | bc -l`
-		echo -e "\n\t*** Looking for degeneracy of the conduction band ***"
-		echo -e "\t  e(cb) = $E_CB,    e(cb+1) = $E_CB  ->  $DIFF"
+		print_str "Looking for degeneracy of the conduction band" "sub"
+		print_str "  e(vb-1) = $E_VB_1,    e(vb) = $E_VB  ->  $DIFF"
 		if (( `echo "$DIFF<0.001" | bc -l` )); then
 			DEGEN=1
-			echo -e "\t  Degeneracy found within the 1meV limit..."
-			echo -e "\t  running fit of the vb-1 band"
-			echo -e "\tgnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
-			gnuplot -e "FILE='$BAND_OUT'" -e "NBND=$(($CB+2))" -e "OUTNAME='${BAND_OUT:0: -4}_cb-1.pdf'" emass_fit.gnu
+			print_str "  Degeneracy found within the 1meV limit.."
+			print_str "  running fit of the vb-1 band"
+			print_str "gnuplot -e \"OUTNAME='${BAND_OUT:0: -4}_vb.pdf'\" emass_fit.gnu"
+			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+2)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $ANSII_F_BRIGHT_GREEN
 		else
-			echo -e "\t  No degeneracy for the conduction band"
-			echo -e "\t  vb and vb-1 are split more than 1meV"
+			print_str "  No degeneracy for the conduction band"
+			print_str "  vb and vb-1 are split more than 1meV"
 		fi
 
 	done
+
 	#Performe calculation with dense k-point near minimum before
 	END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $BEFORE | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
-
-: '
-	IN=${PREFIX}_script.before_b${buck}.in
-	OUT=${PREFIX}_script.before_b${buck}.out
-
-	KPT_MODE="K_POINTS {crystal_b}"
-	KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
-
-	print_in_pw nscf
-
-	echo -e "\tStart: " `date`
-	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t  $COMMAND < $IN > $OUT"
-	#$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date`
-
-	#qepp_plotband.x $OUT before_band.dat
-' > /dev/null
-
 
 	####################################################################################
 	#Run pw2gw for optical properties
 	#Run nscf calculation
 	echo -e "\n"
-	echo -e "\t*************************************************************************"
-	echo -e "\tStarting the calcuations for the alfa0                                   "
-	echo -e "\t*************************************************************************"
+	print_str "Starting the calcuations for the alfa0" "title" $ANSII_F_YELLOW
+
 	IN=${PREFIX}_script.nscf-opt_b${buck}.in
 	OUT=${PREFIX}_script.nscf-opt_b${buck}.out
 
@@ -282,12 +317,7 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	KPT_LIST="30 30 1 0 0 0"
 
 	print_in_pw nscf
-
-	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
-	COMMAND="$RUN_COMMAND $BIN_DIR/pw.x"
-	echo -e "\t  $COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
+	do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $ANSII_F_BRIGHT_GREEN
 
 
 	#Run pw2gw
@@ -295,29 +325,22 @@ for buck in 0.00; do #0.06 0.08 0.10 0.12 0.14
 	OUT=${PREFIX}_script.pw2gw_b${buck}.out
 
 	print_in_pw2gw
+	do_command "$RUN_COMMAND $BIN_DIR/pw2gw_new.x" "date io" $ANSII_F_BRIGHT_GREEN
 
-	echo -e "\tStart: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
-	COMMAND="$RUN_COMMAND $BIN_DIR/pw2gw_new.x"
-	echo -e "\t $COMMAND < $IN > $OUT"
-	$COMMAND < $IN > $OUT
-	echo -e "\tEnd: " `date` -> `echo "$(date +%s.%N) - $START_TIME" | bc -l`
-
-	echo -e "\teps_average.x epsX.dat epsY.dat"
-	eps_average.x epsX.dat epsY.dat
-	echo -e "\tapply_kk_im.x averaged.dat real_xy.dat 1"
-	apply_kk_im.x averaged.dat real_xy.dat 1
+	do_command "eps_average.x epsX.dat epsY.dat" "null" $ANSII_F_BRIGHT_GREEN
+	do_command "apply_kk_im.x averaged.dat real_xy.dat 1" "null" $ANSII_F_BRIGHT_GREEN
 
 	EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 	VACUUM=`echo "$cdim3 * $alat" | bc -l`
 	ALFA0=`echo "$EPS0 * $VACUUM / (4 * 3.141592)" | bc -l`
 	ALFA0=`printf %.5f $ALFA0`
 
-	echo -e"\n\tALFA0 = $ALFA0"
+	echo -e "\n${TAB}ALFA0 = $ALFA0"
 done
 
 
 echo -e "\nEnd at: $(date)"
-echo -e "Total run time: " `echo "$(date +%s.%N) - $START_TIME" | bc -l`
+echo -e "Total run time: " `echo "$(date +%s.%N) - $START_TIME" | bc -l` "s"
 echo -e "\n\n"
 
 
