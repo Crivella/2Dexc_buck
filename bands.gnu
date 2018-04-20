@@ -4,7 +4,7 @@ set term pdfcairo enhanced
 set encoding utf8
 set termoption dashed
 
-set output "bands.pdf"
+set output OUTNAME
 
 stats FILE u 1:5 nooutput
 

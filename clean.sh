@@ -1,7 +1,7 @@
 #!/bin/bash
 
 find . -name "*.out*" -print -exec rm {} \;
-find . -name "*_script*" -print -exec rm {} \;
+find . -name "*.in" -print -exec rm {} \;
 find . -name "*.ps*" -print -exec rm {} \;
 find . -name "*.xmgr*" -print -exec rm {} \;
 find . -name "*.rap*" -print -exec rm {} \;

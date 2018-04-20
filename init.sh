@@ -104,8 +104,8 @@ cat > $IN << EOF
     ibrav             = $ibrav
     celldm(1)         = $alat
     celldm(3)         = $cdim3
-    nat               = 2
-    ntyp              = 2
+    nat               = $nat
+    ntyp              = $ntyp
     ecutwfc           = $cutoff
     nbnd              = $nbnd
    ! smearing          = 'fermi-dirac'
@@ -123,12 +123,27 @@ cat > $IN << EOF
 /
 
 ATOMIC_SPECIES
-Al  26.982  Al.pz-vbc.UPF
-N   14.067  N.pz-vbc.UPF
+$ATOM_1
+$ATOM_2
+$ATOM_3
+$ATOM_4
+$ATOM_5
+$ATOM_6
 
-ATOMIC_POSITIONS {alat}
-Al      0.000000000   0.577350300   0.00
-N       0.500000000   0.288675100   $buck
+ATOMIC_POSITIONS {$AP}
+$pos_1
+$pos_2
+$pos_3
+$pos_4
+$pos_5
+$pos_6
+$pos_7
+$pos_8
+$pos_9
+$pos_10
+$pos_11
+$pos_12
+
 
 $KPT_MODE
 $KPT_LIST
