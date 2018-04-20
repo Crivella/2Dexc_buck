@@ -1,6 +1,7 @@
 #ifndef MPI_BASE_H
 #define MPI_BASE_H
 
+#ifdef __MPI
 #include <mpi.h>	//MPI_Reduce(), MPI_Allreduce(), MPI_Barrier(), MPI_Bcast()
 #include <string.h>	//memcpy()
 #include <assert.h>	//assert()
@@ -18,6 +19,8 @@ int bcast_base_integer( int *, int , MPI_Comm , int );
 int bcast_base_long( long int *, int , MPI_Comm , int );
 int bcast_base_double( double *, int , MPI_Comm , int );
 int bcast_base_complex( double complex *, int, MPI_Comm, int);
+
+#endif //__MPI
 
 
 

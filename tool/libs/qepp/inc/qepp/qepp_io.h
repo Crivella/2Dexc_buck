@@ -10,6 +10,7 @@
 #include <qepp/qepp_mpi.h>
 #include <qepp/qepp_file.h>
 #include <qepp/qepp_struct.h>
+#include <qepp/qepp_err.h>
 
 #define JUST2(a, b, ...) (a), (b)
 

@@ -1,15 +1,17 @@
 #ifndef QEPP_MPI_H
 #define QEPP_MPI_H
 
-#ifdef __MPI
+typedef struct mpi_data mpi_data;
 
-#include <mpi.h>	//MPI_Comm_size(), MPI_Comm_rank(), MPI_Get_processor_name()
+
 #include <stdio.h>	//fprintf(), fopen(), fclose()
 #include <string.h>	//memcpy()
 #include <stdlib.h>	//malloc(), calloc()
 #include <assert.h>	//assert()
 #include <complex.h>
 
+#ifdef __MPI
+#include <mpi.h>	//MPI_Comm_size(), MPI_Comm_rank(), MPI_Get_processor_name()
 #include <qepp/mpi_base.h>
 
 #ifndef ARRAY_SIZE_MACRO //ARRAY_SIZE_MACRO
@@ -149,28 +151,6 @@ int mp_bcast_cv2( double complex ** a, MPI_Comm comm);
 int mp_bcast_cv3( double complex *** a, MPI_Comm comm);
 int mp_bcast_cv4( double complex **** a, MPI_Comm comm);
 
-
-
-
-#else //__MPI ***************************************************************************************************************
-
-#define SET_PW_MPI( ...) ;
-#define mp_sum(a,b, ...) ;
-#define mp_bcast(a,b, ...) ;
-#define MPI_COMM_WORLD 0
-void * initialize_mpi_data();
-
-#endif //__MPI ***************************************************************************************************************
-
-/*****************************************************************************************************************************************/
-
-typedef struct mpi_data mpi_data;
-
-mpi_data * initialize_mpi_data();
-void * print_mpi_data( mpi_data * to_print, FILE * write);
-mpi_data * duplicate_mpi_data( mpi_data * to_dupl);
-void * free_mpi_data( mpi_data * to_free);
-
 struct mpi_data
 {
 	int typeID;
@@ -188,6 +168,32 @@ struct mpi_data
 	size_t		(*totmem)( mpi_data *);
 };
 
+mpi_data * initialize_mpi_data();
+
+
+#else //__MPI ***************************************************************************************************************
+
+#define SET_PW_MPI( ...) ;
+#define mp_sum(a,b, ...) ;
+#define mp_bcast(a,b, ...) ;
+#define MPI_COMM_WORLD 0
+void * initialize_mpi_data();
+
+struct mpi_data
+{
+	void * 		(*print)( mpi_data *, FILE *);
+	mpi_data *	(*duplicate)( mpi_data *);
+	void * 		(*free)( mpi_data *);
+	size_t		(*totmem)( mpi_data *);
+};
+
+#endif //__MPI ***************************************************************************************************************
+
+/*****************************************************************************************************************************************/
+
+void * print_mpi_data( mpi_data * to_print, FILE * write);
+mpi_data * duplicate_mpi_data( mpi_data * to_dupl);
+void * free_mpi_data( mpi_data * to_free);
 
 
 #endif //QEPP_MPI_H

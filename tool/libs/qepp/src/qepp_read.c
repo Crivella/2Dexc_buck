@@ -1253,6 +1253,12 @@ errh * read_egv_xml( const char * filename, egv ** out_ptr)
 	*out_ptr = res;
 	SUCCESS();
 }
+#else //__LIBXML
+errh * read_data_file( const char * filename, data_file ** a) {return NULL;}
+errh * read_wfc_xml( ) {return NULL;}
+evc  * read_evc_xml( ) {return NULL;}
+errh * read_gkv_xml( ) {return NULL;}
+errh * read_egv_xml( ) {return NULL;}
 #endif //__LIBXML
 
 

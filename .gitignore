@@ -1,9 +1,10 @@
 *~
 *.o
-*.out*
+*.x
 *.so
 tmp
 *.in
+*.out
 *.dat*
 matrixelements
 *.pdf
