@@ -131,18 +131,18 @@ $ATOM_5
 $ATOM_6
 
 ATOMIC_POSITIONS {$AP}
-$POS_1
-$POS_2
-$POS_3
-$POS_4
-$POS_5
-$POS_6
-$POS_7
-$POS_8
-$POS_9
-$POS_10
-$POS_11
-$POS_12
+$pos_1
+$pos_2
+$pos_3
+$pos_4
+$pos_5
+$pos_6
+$pos_7
+$pos_8
+$pos_9
+$pos_10
+$pos_11
+$pos_12
 
 
 $KPT_MODE
