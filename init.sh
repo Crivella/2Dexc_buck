@@ -155,7 +155,7 @@ function print_in_pw2gw()
 cat > $IN << EOF
 &inputpp
   prefix='$PREFIX',
-  outdir='tmp/',
+  outdir='$TMP_DIR',
   what='gw',
   qplda=.false.,
   vxcdiag=.false.,

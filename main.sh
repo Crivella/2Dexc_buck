@@ -19,7 +19,7 @@ echo "Started at: " `date`
 TAB_C=0
 set_tab $TAB_C
 
-SAVE="SAVE.dat"
+SAVE="${prefix}_SAVE.dat"
 printf "#%14s%14s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" > $SAVE
 
 
@@ -294,6 +294,9 @@ for alat in ${ALAT_LIST}; do
 		ALFA0=`printf %.5f $ALFA0`
 
 		echo -e "\n${TAB}ALFA0 = $ALFA0"
+
+		mkdir -p ${PREFIX}
+		mv -t ${PREFIX} matrixelements k.dat eps* averaged.dat real_xy.dat
 
 
 		####################################################################################
