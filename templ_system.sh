@@ -16,6 +16,8 @@ ntyp=2
 nbnd=20
 ibrav=4
 
+KPT_LIST_pw2gw="15 15 1 0 0 0"
+
 ATOM_1="Al  26.982  Al.pz-vbc.UPF"
 ATOM_2="N   14.067  N.pz-vbc.UPF"
 ATOM_3=""

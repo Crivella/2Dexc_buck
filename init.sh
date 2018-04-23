@@ -12,7 +12,7 @@ ANSII_F_BRIGHT_RED="\x1B[38;2;255;0;0m"
 ANSII_F_BRIGHT_GREEN="\x1B[38;2;0;255;0m"
 ANSII_F_BRIGHT_BLUE="\x1B[38;2;0;0;255m"
 ANSII_F_BRIGHT_CYAN="\x1B[38;2;0;255;255m"
-ANSII_F_ORANGE="\x1B[38;2;255;165;0m"
+ANSII_F_ORANGE="\x1B[38;2;255;85;00m"
 
 export RESET=$ANSII_RESET
 export BLACK=$ANSII_F_BLACK
@@ -66,7 +66,15 @@ function do_command()
 	
 	if [[ `echo $2 | grep -i "io"` != "" ]]; then
 		if [[ ${IN} != "" ]]; then
-			if [[ `grep "JOB DONE" $OUT`=="" ]]; then
+			if [[ `grep "JOB DONE" $OUT 2>/dev/null` == "" ]]; then
+				EX=`echo ${COMMAND} | tr " " '\n' | grep ".x" | rev | cut -d/ -f1 | rev | cut -d. -f1`
+				if [[ `echo ${IN} | grep "_scf."` != "" ]]; then
+					EX2="scf"
+				fi
+				if [[ `echo ${IN} | grep "_nscf."` != "" ]]; then
+					EX2="nscf"
+				fi
+				eval "print_in_${EX} ${EX2}"
 				echo -e "${TAB}  ${3}${COMMAND} < ${IN} > ${OUT}${RESET}"
 				${COMMAND} < ${IN} > ${OUT}
 			else

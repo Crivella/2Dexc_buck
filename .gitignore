@@ -14,3 +14,5 @@ include
 lib
 log
 job*
+system.sh
+ENVIRONMENT_VARIABLES

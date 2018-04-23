@@ -274,7 +274,7 @@ for alat in ${ALAT_LIST}; do
 		OUT=${PREFIX}_nscf-opt.out
 
 		KPT_MODE="K_POINTS {automatic}"
-		KPT_LIST="15 15 1 0 0 0"
+		KPT_LIST=${KPT_LIST_pw2gw}
 
 		print_in_pw nscf
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
@@ -293,8 +293,8 @@ for alat in ${ALAT_LIST}; do
 		fi
 		cd ${PREFIX}
 
-		do_command "tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
-		do_command "tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
+		do_command "../tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
+		do_command "../tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
 
 		EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 		VACUUM=`echo "$cdim3 * $alat" | bc -l`
