@@ -10,6 +10,7 @@ find . -name "tmp" -print -exec rm -r {} \;
 find . -name "*~" -print -exec rm {} \;
 find . -name "*.log" -print -exec rm {} \;
 find . -name "matrixelements" -print -exec rm {} \;
+find . -name "core.*" -print -exec rm {} \;
 
 find . \( -name "*Ref*" -o -name "*Docs*" \) -prune -o -name "*.pdf" -print -exec rm {} \; 
 find . \( -name "*Ref*" -o -name "*Docs*" \) -prune -o -name "*.dat" -print -exec rm {} \;
