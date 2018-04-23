@@ -115,6 +115,8 @@ for alat in ${ALAT_LIST}; do
 		#Run command for QE
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
+		cp -t tmp $IN $OUT
+
 		#Extract total energy from output and print it in a two-coloumn file with the buckling
 		ENERGY=`cat $OUT | grep ! | tr -dc '0-9,-.'`
 		printf "%15.6f%14.6f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" >> $SAVE
@@ -135,7 +137,7 @@ for alat in ${ALAT_LIST}; do
 
 		#Make the band plot 
 		BAND_OUT="bands_b${buck}_plotted.dat"
-		do_command "qepp_plotband.x $OUT $BAND_OUT" "null"  $BRIGHT_GREEN
+		do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null"  $BRIGHT_GREEN
 		do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd -e OUTNAME='_bands.pdf' bands.gnu" ""  $BRIGHT_GREEN
 
 
@@ -147,7 +149,7 @@ for alat in ${ALAT_LIST}; do
 		IN=""
 		APP="$OUT"
 		OUT="tmp_gap.out"
-		do_command "smallest_gap.x $APP" "io null" $BRIGHT_GREEN
+		do_command "tool/bin/smallest_gap.x $APP" "io null" $BRIGHT_GREEN
 
 		N_KPT_MINGAP=`cat tmp_gap.out | grep "Min gap energy:" -A 1 | tail -n 1 | cut -d# -f2  | tr -dc '0-9,-.'`
 		VB=`cat tmp_gap.out | grep "vb = " | cut -d" " -f3 | tr -dc '0-9'`
@@ -196,7 +198,7 @@ for alat in ${ALAT_LIST}; do
 			do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
 			BAND_OUT="_kpt${N_KPT_MINGAP}to${app}_band.dat"
-			do_command "qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
+			do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
 			MASS_VB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+1)) -e OUTNAME='${BAND_OUT:0: -4}_cb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
@@ -285,18 +287,24 @@ for alat in ${ALAT_LIST}; do
 		print_in_pw2gw
 		do_command "$RUN_COMMAND $BIN_DIR/pw2gw_new.x" "date io" $BRIGHT_GREEN
 
-		do_command "eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
-		do_command "apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
+		if [[ ! -d ${PREFIX} ]]; then
+			mkdir -p ${PREFIX}
+			mv -t ${PREFIX} matrixelements k.dat eps*
+		fi
+		cd ${PREFIX}
+
+		do_command "tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
+		do_command "tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
 
 		EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 		VACUUM=`echo "$cdim3 * $alat" | bc -l`
 		ALFA0=`echo "$EPS0 * $VACUUM / (4 * $PI)" | bc -l`
 		ALFA0=`printf %.5f $ALFA0`
 
-		echo -e "\n${TAB}ALFA0 = $ALFA0"
+		print_str "Alfa_0 = ${ALFA0}" "sub" $CYAN
+		#echo -e "\n${TAB}ALFA0 = $ALFA0"
 
-		mkdir -p ${PREFIX}
-		mv -t ${PREFIX} matrixelements k.dat eps* averaged.dat real_xy.dat
+		cd ..
 
 
 		####################################################################################

@@ -12,6 +12,7 @@ ANSII_F_BRIGHT_RED="\x1B[38;2;255;0;0m"
 ANSII_F_BRIGHT_GREEN="\x1B[38;2;0;255;0m"
 ANSII_F_BRIGHT_BLUE="\x1B[38;2;0;0;255m"
 ANSII_F_BRIGHT_CYAN="\x1B[38;2;0;255;255m"
+ANSII_F_ORANGE="\x1B[38;2;255;165;0m"
 
 export RESET=$ANSII_RESET
 export BLACK=$ANSII_F_BLACK
@@ -27,6 +28,7 @@ export BRIGHT_RED=$ANSII_F_BRIGHT_RED
 export BRIGHT_GREEN=$ANSII_F_BRIGHT_GREEN
 export BRIGHT_BLUE=$ANSII_F_BRIGHT_BLUE
 export BRIGHT_CYAN=$ANSII_F_BRIGHT_CYAN
+export ORANGE=$ANSII_F_ORANGE
 
 function set_tab()
 {
@@ -64,8 +66,12 @@ function do_command()
 	
 	if [[ `echo $2 | grep -i "io"` != "" ]]; then
 		if [[ ${IN} != "" ]]; then
-			echo -e "${TAB}  ${3}${COMMAND} < ${IN} > ${OUT}${RESET}"
-			${COMMAND} < ${IN} > ${OUT}
+			if [[ `grep "JOB DONE" $OUT`=="" ]]; then
+				echo -e "${TAB}  ${3}${COMMAND} < ${IN} > ${OUT}${RESET}"
+				${COMMAND} < ${IN} > ${OUT}
+			else
+				print_str "Job already performed. Reading from previous output" "" $ORANGE
+			fi
 		else
 			echo -e "${TAB}  ${3}${COMMAND} > ${OUT}${RESET}"
 			${COMMAND} > ${OUT} 2>&1

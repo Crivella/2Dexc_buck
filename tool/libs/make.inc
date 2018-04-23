@@ -1,6 +1,6 @@
 #Library env variables
 
-PREFIX=$(HOME)/.local
+PREFIX=$(shell pwd)/../..
 
 INC =./inc
 SDIR=./src
