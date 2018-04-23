@@ -111,7 +111,7 @@ for alat in ${ALAT_LIST}; do
 		KPT_LIST="12 12 1 1 1 1"
 
 		#Print input for scf
-		print_in_pw scf
+		#print_in_pw scf
 		#Run command for QE
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
@@ -132,7 +132,7 @@ for alat in ${ALAT_LIST}; do
 		KPT_MODE=""
 		KPT_LIST="`cat High_symm/$ibrav.kpt`"
 
-		print_in_pw nscf
+		#print_in_pw nscf
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
 		#Make the band plot 
@@ -194,7 +194,7 @@ for alat in ${ALAT_LIST}; do
 			KPT_MODE="K_POINTS {crystal_b}"
 			KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
 
-			print_in_pw nscf
+			#print_in_pw nscf
 			do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
 			BAND_OUT="_kpt${N_KPT_MINGAP}to${app}_band.dat"
@@ -276,7 +276,7 @@ for alat in ${ALAT_LIST}; do
 		KPT_MODE="K_POINTS {automatic}"
 		KPT_LIST=${KPT_LIST_pw2gw}
 
-		print_in_pw nscf
+		#print_in_pw nscf
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
 
@@ -284,7 +284,7 @@ for alat in ${ALAT_LIST}; do
 		IN=${PREFIX}_pw2gw.in
 		OUT=${PREFIX}_pw2gw.out
 
-		print_in_pw2gw
+		#print_in_pw2gw
 		do_command "$RUN_COMMAND $BIN_DIR/pw2gw_new.x" "date io" $BRIGHT_GREEN
 
 		if [[ ! -d ${PREFIX} ]]; then
