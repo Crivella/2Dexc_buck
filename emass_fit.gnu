@@ -1,6 +1,7 @@
 #!/usr/bin/gnuplot
 
-set term pdfcairo enhanced
+#set term pdfcairo enhanced
+set term postscript enhanced
 set encoding utf8
 set termoption dashed
 
