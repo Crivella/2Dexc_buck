@@ -136,9 +136,9 @@ for alat in ${ALAT_LIST}; do
 		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
 		#Make the band plot 
-		BAND_OUT="bands_b${buck}_plotted.dat"
+		BAND_OUT="${PREFIX}_plotted.dat"
 		do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null"  $BRIGHT_GREEN
-		do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd -e OUTNAME='_bands.pdf' bands.gnu" ""  $BRIGHT_GREEN
+		do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd -e OUTNAME='${BAND_OUT:0: -4}.pdf' bands.gnu" ""  $BRIGHT_GREEN
 
 
 		###################################################################################
@@ -189,7 +189,7 @@ for alat in ${ALAT_LIST}; do
 			echo -e "${TAB}Running direction $START -> $END"
 
 			IN=${PREFIX}_nscf-kpt${N_KPT_MINGAP}to${app}.in
-			OUT=${PREFIX}_nscf-kpt${N_KPT_MINGAP}to${app}_b${buck}.out
+			OUT=${PREFIX}_nscf-kpt${N_KPT_MINGAP}to${app}.out
 
 			KPT_MODE="K_POINTS {crystal_b}"
 			KPT_LIST="`echo -e "2\n$START 100\n$END 1"`"
@@ -197,7 +197,7 @@ for alat in ${ALAT_LIST}; do
 			#print_in_pw nscf
 			do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
-			BAND_OUT="_kpt${N_KPT_MINGAP}to${app}_band.dat"
+			BAND_OUT="${PREFIX}_kpt${N_KPT_MINGAP}to${app}_band.dat"
 			do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
 			MASS_VB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
