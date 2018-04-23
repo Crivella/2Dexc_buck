@@ -12,3 +12,5 @@ matrixelements
 *.swp
 include
 lib
+log
+job*
