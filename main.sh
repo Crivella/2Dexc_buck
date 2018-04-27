@@ -298,7 +298,7 @@ for alat in ${ALAT_LIST}; do
 
 		EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 		VACUUM=`echo "$cdim3 * $alat" | bc -l`
-		ALFA0=`echo "$EPS0 * $VACUUM / (4 * $PI)" | bc -l`
+		ALFA0=`echo "($EPS0 - 1) * $VACUUM / (4 * $PI)" | bc -l`
 		ALFA0=`printf %.5f $ALFA0`
 
 		print_str "Alfa_0 = ${ALFA0}" "sub" $CYAN
