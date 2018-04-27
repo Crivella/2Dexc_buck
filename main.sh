@@ -294,7 +294,9 @@ for alat in ${ALAT_LIST}; do
 		if [[ ! -d ${PREFIX} ]]; then
 			mkdir -p ${PREFIX}
 			mv -t ${PREFIX} matrixelements k.dat eps*
-		fi
+		else if [[ -f "matrixelements" ]]; then
+			mv -t ${PREFIX} matrixelements k.dat eps*
+		fi fi
 		cd ${PREFIX}
 
 		if [[ ! -f "averaged.dat" ]]; then
