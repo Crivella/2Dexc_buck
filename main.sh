@@ -20,7 +20,7 @@ TAB_C=0
 set_tab $TAB_C
 
 SAVE="${prefix}_SAVE.dat"
-printf "#%14s%14s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" > $SAVE
+printf "#%14s%14s%14s%14s%14s%14s%14s%14s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
 
 
 #Cycle over different celldimension
@@ -119,7 +119,6 @@ for alat in ${ALAT_LIST}; do
 
 		#Extract total energy from output and print it in a two-coloumn file with the buckling
 		ENERGY=`cat $OUT | grep ! | tr -dc '0-9,-.'`
-		printf "%15.6f%14.6f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" >> $SAVE
 		#echo -e "$buck_bohr\t\t$ENERGY" >> $SAVE
 
 		###################################################################################
@@ -336,6 +335,9 @@ for alat in ${ALAT_LIST}; do
 		Eb=`echo "$Eb_Rex * $Rex * $HA_to_EV" | bc -l`
 		rex=`echo "$rex_Aex * $Aex" | bc -l`
 		print_str "EXC:  Binding = $Eb   radius = $rex" "sub" $CYAN
+
+
+		printf "%15.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$ALFA0" "$Eb" "$rex" >> $SAVE
 	done
 	let TAB_C--
 	printf "\n" >> $SAVE
