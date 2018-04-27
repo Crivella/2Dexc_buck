@@ -108,7 +108,7 @@ for alat in ${ALAT_LIST}; do
 
 		#Set k_point for input
 		KPT_MODE="K_POINTS {automatic}"
-		KPT_LIST="12 12 1 1 1 1"
+		KPT_LIST=${KPT_LIST_scf}
 
 		#Print input for scf
 		#print_in_pw scf

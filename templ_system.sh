@@ -16,7 +16,11 @@ ntyp=2
 nbnd=20
 ibrav=4
 
-KPT_LIST_pw2gw="15 15 1 0 0 0"
+KPT_LIST_scf="12 12 1 1 1 1"
+KPT_LIST_pw2gw="102 102 1 0 0 0"
+
+PARALLEL_scf="-npools 2" #-npools 17
+PARALLEL_nscf="-npools 2" #-npools 34
 
 ATOM_1="Al  26.982  Al.pz-vbc.UPF"
 ATOM_2="N   14.067  N.pz-vbc.UPF"

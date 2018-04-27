@@ -68,15 +68,18 @@ function do_command()
 		if [[ ${IN} != "" ]]; then
 			if [[ `grep "JOB DONE" $OUT 2>/dev/null` == "" ]]; then
 				EX=`echo ${COMMAND} | tr " " '\n' | grep ".x" | rev | cut -d/ -f1 | rev | cut -d. -f1`
+				PARALLEL=""
 				if [[ `echo ${IN} | grep "_scf."` != "" ]]; then
 					EX2="scf"
+					PARALLEL=${PARALLEL_scf}
 				fi
-				if [[ `echo ${IN} | grep "_nscf."` != "" ]]; then
+				if [[ `echo ${IN} | grep "_nscf"` != "" ]]; then
 					EX2="nscf"
+					PARALLEL=${PARALLEL_nscf}
 				fi
 				eval "print_in_${EX} ${EX2}"
-				echo -e "${TAB}  ${3}${COMMAND} < ${IN} > ${OUT}${RESET}"
-				${COMMAND} < ${IN} > ${OUT}
+				echo -e "${TAB}  ${3}${COMMAND} ${PARALLEL} < ${IN} > ${OUT}${RESET}"
+				${COMMAND} ${PARALLEL} < ${IN} > ${OUT}
 			else
 				print_str "Job already performed. Reading from previous output" "" $ORANGE
 			fi
