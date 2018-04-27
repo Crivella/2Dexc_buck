@@ -72,11 +72,10 @@ function do_command()
 				if [[ `echo ${IN} | grep "_scf."` != "" ]]; then
 					EX2="scf"
 					PARALLEL=${PARALLEL_scf}
-				fi
-				if [[ `echo ${IN} | grep "_nscf"` != "" ]]; then
+				else if [[ `echo ${IN} | grep "_nscf"` != "" ]]; then
 					EX2="nscf"
 					PARALLEL=${PARALLEL_nscf}
-				fi
+				fi fi
 				eval "print_in_${EX} ${EX2}"
 				echo -e "${TAB}  ${3}${COMMAND} ${PARALLEL} < ${IN} > ${OUT}${RESET}"
 				${COMMAND} ${PARALLEL} < ${IN} > ${OUT}
@@ -87,15 +86,13 @@ function do_command()
 			echo -e "${TAB}  ${3}${COMMAND} > ${OUT}${RESET}"
 			${COMMAND} > ${OUT} 2>&1
 		fi
+	else if [[ `echo $2 | grep -i "null"` != "" ]]; then
+		echo -e "${TAB}  ${3}${COMMAND} > /dev/null 2>&1${RESET}"
+		$COMMAND  > /dev/null 2>&1
 	else
-		if [[ `echo $2 | grep -i "null"` != "" ]]; then
-			echo -e "${TAB}  ${3}${COMMAND} > /dev/null 2>&1${RESET}"
-			$COMMAND  > /dev/null 2>&1
-		else
-			echo -e "${TAB}  ${3}${COMMAND}${RESET}"
-			$COMMAND
-		fi
-	fi
+		echo -e "${TAB}  ${3}${COMMAND}${RESET}"
+		$COMMAND
+	fi fi
 
 	if [[ `echo $2 | grep "date"` != "" ]]; then
 		echo -e "${TAB}End: " `date` "   Total run time: " `echo "$(date +%s.%N) - $START_TIME" | bc -l` "s"

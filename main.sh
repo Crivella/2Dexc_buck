@@ -137,7 +137,9 @@ for alat in ${ALAT_LIST}; do
 
 		#Make the band plot 
 		BAND_OUT="${PREFIX}_plotted.dat"
-		do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null"  $BRIGHT_GREEN
+		if [[ ! -f $BAND_OUT ]]; then
+			do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
+		fi
 		do_command "gnuplot -e FILE='${BAND_OUT}' -e NBND=$nbnd -e OUTNAME='${BAND_OUT:0: -4}.pdf' bands.gnu" ""  $BRIGHT_GREEN
 
 
@@ -198,7 +200,9 @@ for alat in ${ALAT_LIST}; do
 			do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 
 			BAND_OUT="${PREFIX}_kpt${N_KPT_MINGAP}to${app}_band.dat"
-			do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
+			if [[ ! -f $BAND_OUT ]]; then
+				do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
+			fi
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
 			MASS_VB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+1)) -e OUTNAME='${BAND_OUT:0: -4}_cb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
@@ -293,8 +297,12 @@ for alat in ${ALAT_LIST}; do
 		fi
 		cd ${PREFIX}
 
-		do_command "../tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
-		do_command "../tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
+		if [[ ! -f "averaged.dat" ]]; then
+			do_command "../tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
+		fi
+		if [[ ! -f "real_xy.dat" ]]; then
+			do_command "../tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
+		fi		
 
 		EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`
 		VACUUM=`echo "$cdim3 * $alat" | bc -l`
