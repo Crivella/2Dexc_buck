@@ -236,7 +236,7 @@ for alat in ${ALAT_LIST}; do
 
 			DEGEN=0
 			print_str "Looking for degeneracy of the conduction band" "sub"
-			print_str "  e(vb-1) = $E_VB_1,    e(vb) = $E_VB  ->  $DIFF"
+			print_str "  e(cb) = $E_VB_1,    e(cb+1) = $E_VB  ->  $DIFF"
 			if (( `echo "$DIFF<0.001" | bc -l` )); then
 				DEGEN=1
 				print_str "  Degeneracy found within the 1meV limit.."
@@ -245,7 +245,7 @@ for alat in ${ALAT_LIST}; do
 				MASS_CB_1_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			else
 				print_str "  No degeneracy for the conduction band"
-				print_str "  vb and vb-1 are split more than 1meV"
+				print_str "  cb and cb+1 are split more than 1meV"
 			fi
 
 			if [[ $DEGEN == "1" ]]; then
