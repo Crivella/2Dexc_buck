@@ -77,7 +77,7 @@ void open_io_env( int node, int mode, int verb)
 		printf( "stdin is empty\n");
 	}
 	else //stdin contains data
-	{
+	{/*
 		check=1;
 		char buff[4096];
 		char * ptr;
@@ -119,7 +119,7 @@ void open_io_env( int node, int mode, int verb)
 
 		//READ( &df, datafile_path);
 		//df->print(df,stdout);//PRINT_DATA( df, stdout);	
-	}	
+	*/}	
 #ifdef __MPI
 	}
 #endif
