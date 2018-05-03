@@ -31,6 +31,8 @@ f(x) = a + b * x + c * x**2 + d * x**3
 fit f(x) FILE u 1:(column(NBND)) via a,b,c,d
 
 print c
+set print "app1.dat"
+print a
 
 set xrange [xmin:xmax]
 set yrange [*:*]

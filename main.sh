@@ -20,7 +20,7 @@ TAB_C=0
 set_tab $TAB_C
 
 SAVE="${prefix}_SAVE.dat"
-printf "#%14s%14s%14s%14s%14s%14s%14s%14s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
+printf "#%14s%14s%14s%14s%14s%14s%14s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
 
 
 #Cycle over different celldimension
@@ -203,10 +203,13 @@ for alat in ${ALAT_LIST}; do
 				do_command "tool/bin/qepp_plotband.x $OUT $BAND_OUT" "null" $BRIGHT_GREEN
 			fi
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
+			E_BAND_0_VB=`cat app1.dat`
 			MASS_VB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+1)) -e OUTNAME='${BAND_OUT:0: -4}_cb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
+			E_BAND_0_CB=`cat app1.dat`
 			MASS_CB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			rm app.dat
+			rm app1.dat
 
 			MIN_LINE=`cat $BAND_OUT | head -n $N_KPT_MINGAP | tail -n 1 |  cut -d$'\t' -f 2`
 			E_VB=`echo $MIN_LINE | cut -d" " -f $VB`
@@ -228,6 +231,7 @@ for alat in ${ALAT_LIST}; do
 			fi
 
 			if [[ $DEGEN == "1" ]]; then
+				print_str "m_vb = $MASS_CB_APP    m_vb-1 = $MASS_CB_1_APP" "" $CYAN
 				MASS_VB=`echo "$MASS_VB + sqrt(($MASS_VB_APP + $MASS_VB_1_APP)^2)/4" | bc -l`
 			else
 				MASS_VB=`echo "$MASS_VB + sqrt(($MASS_VB_APP)^2)/2" | bc -l`
@@ -252,6 +256,7 @@ for alat in ${ALAT_LIST}; do
 			fi
 
 			if [[ $DEGEN == "1" ]]; then
+				print_str "m_cb = $MASS_CB_APP    m_cb+1 = $MASS_CB_1_APP" "" $CYAN
 				MASS_CB=`echo "$MASS_CB + sqrt(($MASS_CB_APP + $MASS_CB_1_APP)^2)/4" | bc -l`
 			else
 				MASS_CB=`echo "$MASS_CB + sqrt(($MASS_CB_APP)^2)/2" | bc -l`
@@ -337,7 +342,7 @@ for alat in ${ALAT_LIST}; do
 		print_str "EXC:  Binding = $Eb   radius = $rex" "sub" $CYAN
 
 
-		printf "%15.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$ALFA0" "$Eb" "$rex" >> $SAVE
+		printf "%15.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%10.4f%10.4f%10.4f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
 	done
 	let TAB_C--
 	printf "\n" >> $SAVE
