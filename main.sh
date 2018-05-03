@@ -20,7 +20,7 @@ TAB_C=0
 set_tab $TAB_C
 
 SAVE="${prefix}_SAVE.dat"
-printf "#%14s%14s%14s%14s%14s%14s%14s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
+printf "#%12s%12s%12s%12s%12s%12s%12s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
 
 
 #Cycle over different celldimension
@@ -342,7 +342,7 @@ for alat in ${ALAT_LIST}; do
 		print_str "EXC:  Binding = $Eb   radius = $rex" "sub" $CYAN
 
 
-		printf "%15.6f%14.6f%14.6f%14.6f%14.6f%14.6f%14.6f%10.4f%10.4f%10.4f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
+		printf "%13.5f%12.5f%12.5f%12.5f%12.5f%12.5f%12.5f%10.4f%10.4f%10.4f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
 	done
 	let TAB_C--
 	printf "\n" >> $SAVE
