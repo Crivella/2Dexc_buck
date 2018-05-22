@@ -11,7 +11,11 @@ ODIR=./obj
 
 LD_FLAGS=
 
-CC=gcc
-MPICC=mpicc
+ifndef CC
+  CC=gcc
+endif
+ifndef MPICC
+  MPICC=mpicc
+endif
 CFLAGS=-g -O2 -Wall -rdynamic -fpic -std=c11 -I$(IDIR) $(LD_FLAGS)
 LD=-Wl,-rpath=$(LDIR) -L$(LDIR) -L/user/local/lib -lqepp -lm

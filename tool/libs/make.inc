@@ -11,6 +11,10 @@ IDIR=$(PREFIX)/include
 
 LD_FLAGS=
 
-CC=gcc
-MPICC=mpicc
+ifndef CC
+  CC=gcc
+endif
+ifndef MPICC
+  MPICC=mpicc
+endif
 CFLAGS=-g -O2 -Wall -fpic -std=c11 -I$(IDIR) -I$(INC) $(LD_FLAGS)
