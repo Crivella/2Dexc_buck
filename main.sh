@@ -287,7 +287,9 @@ for alat in ${ALAT_LIST}; do
 		KPT_LIST=${KPT_LIST_pw2gw}
 
 		#print_in_pw nscf
-		do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
+		if [[ "$DO_PW2GW" != "n" ]]; then
+			do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
+		fi
 
 
 		#Run pw2gw
