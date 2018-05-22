@@ -295,7 +295,9 @@ for alat in ${ALAT_LIST}; do
 		OUT=${PREFIX}_pw2gw.out
 
 		#print_in_pw2gw
-		do_command "$RUN_COMMAND $BIN_DIR/pw2gw.x" "date io" $BRIGHT_GREEN
+		if [[ "$DO_PW2GW" != "n" ]]; then
+			do_command "$RUN_COMMAND $BIN_DIR/pw2gw.x" "date io" $BRIGHT_GREEN
+		fi
 
 		if [[ ! -d ${PREFIX} ]]; then
 			mkdir -p ${PREFIX}

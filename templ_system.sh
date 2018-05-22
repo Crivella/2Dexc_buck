@@ -19,6 +19,8 @@ nbnd=20
 ibrav=4
 
 KPT_LIST_scf="12 12 1 1 1 1"
+
+DO_PW2GW="y"			#If != 'n' run the pw2gw calculation for the optical properties
 KPT_LIST_pw2gw="102 102 1 0 0 0"
 
 PARALLEL_scf="-npools 2" #-npools 17
