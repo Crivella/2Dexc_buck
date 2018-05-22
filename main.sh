@@ -46,32 +46,34 @@ for alat in ${ALAT_LIST}; do
 
 	#Introduce buckling value to calculate that gives atom distance equal to DIST_0
 	#Fixed atom distance calculation
-	if (( `echo "$alat <= ${ALAT_0}" | bc -l` )); then
-		CHECK=0
-		for b in $BUCKLING_LIST; do
-			if (( `echo "$Dz >= 0" | bc -l` )); then
-				BCK=1
-				DIST=`echo "$alat * sqrt($Dx^2 + $Dy^2 + ($Dz + $b)^2 * ($cdim3)^2 )" | bc -l`
-			else
-				BCK=2
-				DIST=`echo "$alat * sqrt($Dx^2 + $Dy^2 + ($Dz - $b)^2 * ($cdim3)^2 )" | bc -l`
+	if [[ "$FIX_DIST" != "n" ]]; then
+		if (( `echo "$alat <= ${ALAT_0}" | bc -l` )); then
+			CHECK=0
+			for b in $BUCKLING_LIST; do
+				if (( `echo "$Dz >= 0" | bc -l` )); then
+					BCK=1
+					DIST=`echo "$alat * sqrt($Dx^2 + $Dy^2 + ($Dz + $b)^2 * ($cdim3)^2 )" | bc -l`
+				else
+					BCK=2
+					DIST=`echo "$alat * sqrt($Dx^2 + $Dy^2 + ($Dz - $b)^2 * ($cdim3)^2 )" | bc -l`
+				fi
+				if (( `echo "sqrt(($DIST - $DIST_0)^2)<0.001" | bc -l` )); then
+					CHECK=1
+					break
+				fi
+			done
+			blist="$BUCKLING_LIST"
+			if [[ $CHECK == "0" ]]; then
+				Arat=`echo "$ALAT_0 / $alat" | bc -l`
+				b=`echo "sqrt(($Dx^2 + $Dy^2)*($Arat^2 - 1) + $Arat^2*$Dz) - $Dz" | bc -l`
+				b=`printf %0.5f $b`
+				blist="$BUCKLING_LIST $b"
+				print_str "Added buckling value $b to loop to make constant distant calculation"
 			fi
-			if (( `echo "sqrt(($DIST - $DIST_0)^2)<0.001" | bc -l` )); then
-				CHECK=1
-				break
-			fi
-		done
-		blist="$BUCKLING_LIST"
-		if [[ $CHECK == "0" ]]; then
-			Arat=`echo "$ALAT_0 / $alat" | bc -l`
-			b=`echo "sqrt(($Dx^2 + $Dy^2)*($Arat^2 - 1) + $Arat^2*$Dz) - $Dz" | bc -l`
-			b=`printf %0.5f $b`
-			blist="$BUCKLING_LIST $b"
-			print_str "Added buckling value $b to loop to make constant distant calculation"
+		else
+			print_str "WARNING: impossible to add buckling to keep bond_lenght constant"
+			print_str "         alat=$alat > alat_0=${ALAT_0}"
 		fi
-	else
-		print_str "WARNING: impossible to add buckling to keep bond_lenght constant"
-		print_str "         alat=$alat > alat_0=${ALAT_0}"
 	fi
 	
 	#Cycle over different bucklings

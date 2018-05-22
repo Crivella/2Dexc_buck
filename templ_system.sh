@@ -1,5 +1,7 @@
 #Input file
 
+FIX_DIST="y"			#If != 'n' add a buckling value to each alat to keep a fixed bond lenght set by ALAT_0
+				#and the original atom coordinates
 ALAT_0=5.72			#Value of alat that defines the constant distance between atoms
 				#The constant distance is determined at run_time from ALAT_0, POS_1 and POS_2
 CDIM3_0=6			#Value of celldm(3) that defines the constant vacuum lenght

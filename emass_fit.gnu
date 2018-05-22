@@ -1,7 +1,10 @@
 #!/usr/bin/gnuplot
 
-set term pdfcairo enhanced
-#set term postscript enhanced
+if( strstrt( GPVAL_TERMINALS, 'pdfcairo') >0) {
+	set term pdfcairo enhanced
+} else {
+	set term postscript enhanced
+}
 set encoding utf8
 set termoption dashed
 
