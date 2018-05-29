@@ -75,6 +75,9 @@ for alat in ${ALAT_LIST}; do
 			print_str "         alat=$alat > alat_0=${ALAT_0}"
 		fi
 	fi
+
+	#Sort buckling list
+	blist=`echo $blist | tr " " "\n" | sort | tr "\n" " "`
 	
 	#Cycle over different bucklings
 	let TAB_C++
