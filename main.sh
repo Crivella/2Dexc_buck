@@ -64,10 +64,12 @@ for alat in ${ALAT_LIST}; do
 				fi
 			done
 			blist="$BUCKLING_LIST"
+			added="no"
 			if [[ $CHECK == "0" ]]; then
 				Arat=`echo "$ALAT_0 / $alat" | bc -l`
 				b=`echo "sqrt(($Dx^2 + $Dy^2)*($Arat^2 - 1) + $Arat^2*$Dz) - $Dz" | bc -l`
 				b=`printf %0.5f $b`
+				added="$b"
 				blist="$BUCKLING_LIST $b"
 				print_str "Added buckling value $b to loop to make constant distant calculation"
 			fi
@@ -82,12 +84,13 @@ for alat in ${ALAT_LIST}; do
 	
 	#Cycle over different bucklings
 	let TAB_C++
-	#SAVE="${
-	for buck in $blist; do #0.06 0.08 0.10 0.12 0.14
+	for buck in $blist; do
 		set_tab $TAB_C
 
 		buck_a=`printf %.5f $buck`
-		buck=`echo "$buck * $ALAT_0/$alat" | bc -l`
+		if [[ $buck != $added ]]; then
+			buck=`echo "$buck * $ALAT_0/$alat" | bc -l`
+		fi
 
 		if [[ $BCK=="1" ]]; then
 			Z=`echo "$A1_z + $buck" | bc -l`
