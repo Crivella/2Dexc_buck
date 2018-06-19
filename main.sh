@@ -20,7 +20,7 @@ TAB_C=0
 set_tab $TAB_C
 
 SAVE="${prefix}_SAVE.dat"
-printf "#%12s%12s%12s%12s%12s%12s%12s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
+printf "#%12s%12s%11s%13s%12s%12s%12s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
 
 
 #Cycle over different celldimension
@@ -40,6 +40,7 @@ DIST_0=`echo "${ALAT_0} * sqrt($Dx^2 + $Dy^2 + ($Dz * $CDIM3_0)^2)" | bc -l`
 let TAB_C++
 for alat in ${ALAT_LIST}; do
 	set_tab $TAB_C
+	alat=`printf %.5f $alat`
 	cdim3=`echo "${ALAT_0}*${CDIM3_0} / $alat" | bc -l`
 	cdim3=`printf %.4f $cdim3`
 	print_str "Running alat=${alat}   cdim3=${cdim3}" "title" $YELLOW
@@ -57,7 +58,7 @@ for alat in ${ALAT_LIST}; do
 					BCK=2
 					DIST=`echo "$alat * sqrt($Dx^2 + $Dy^2 + ($Dz - $b)^2 * ($cdim3)^2 )" | bc -l`
 				fi
-				if (( `echo "sqrt(($DIST - $DIST_0)^2)<0.001" | bc -l` )); then
+				if (( `echo "sqrt(($DIST - $DIST_0)^2)<0.00005" | bc -l` )); then
 					CHECK=1
 					break
 				fi
@@ -85,6 +86,9 @@ for alat in ${ALAT_LIST}; do
 	for buck in $blist; do #0.06 0.08 0.10 0.12 0.14
 		set_tab $TAB_C
 
+		buck_a=`printf %.5f $buck`
+		buck=`echo $buck * $ALAT_0/$alat`
+
 		if [[ $BCK=="1" ]]; then
 			Z=`echo "$A1_z + $buck" | bc -l`
 			Z=`printf %.8f $Z`
@@ -101,7 +105,7 @@ for alat in ${ALAT_LIST}; do
 		buck_bohr=`printf %.4f $buck_bohr`
 		DIST=`echo "sqrt($Dx^2 + $Dy^2 + (sqrt($Dz^2) + $buck )^2 ) * $alat" | bc -l`
 
-		PREFIX="${prefix}_a${alat}_b${buck}"
+		PREFIX="${prefix}_a${alat}_b${buck_a}"
 
 		#SAVE="${PREFIX}_SAVE.dat"
 		#printf "#%14s%14s%14s%14s" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" > $SAVE
@@ -351,7 +355,7 @@ for alat in ${ALAT_LIST}; do
 		print_str "EXC:  Binding = $Eb   radius = $rex" "sub" $CYAN
 
 
-		printf "%13.5f%12.5f%12.5f%12.5f%12.5f%12.5f%12.5f%10.4f%10.4f%10.4f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
+		printf "%13.5f%12.5f%11.5f%13.7f%12.5f%12.5f%12.5f%10.4f%10.4f%10.4f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
 	done
 	let TAB_C--
 	printf "\n" >> $SAVE
