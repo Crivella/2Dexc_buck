@@ -24,6 +24,8 @@ system(sprintf("tools/split_bk.sh %s",NAME))
 LIST=system("cat system.sh | grep BUCKLING_LIST | cut -d \"=\" -f 2 | tr -d '\"' | cut -d \"#\" -f 1")
 CLIST="black red blue green magenta cyan orange black red blue green magenta cyan orange black red blue green magenta cyan"
 
+ALAT_0=PREFIX=system("cat system.sh | grep ALAT_0= | cut -d \"=\" -f 2 | cut -d \"#\" -f 1")
+
 set xlabel "Cell dimension (Bohr)"
 set ylabel "E_{tot} (Ry)"
 
@@ -46,8 +48,8 @@ do for[i=1:words(LIST)] {
 	dist=g(app)
 	print BUCK,"\t\t", f(app)
 	set label 1 at graph 0.25, graph 0.8 tc "red" sprintf("f(x) = %g + %g*x + %g*x^2", a,b,c) font "Verdana,11"
-	set label 2 at graph 0.35, graph 0.7 tc "blue" sprintf("dist = %g", dist) font "Verdana,11"
-	p N u 1:4 ps 0.5 pt 7  lc rgb "black" ti sprintf("buckling %.5f(alat)",word(LIST,i)+0), \
+	set label 2 at graph 0.35, graph 0.7 tc "blue" sprintf("dist = %g (bohr)", dist) font "Verdana,11"
+	p N u 1:4 ps 0.5 pt 7  lc rgb "black" ti sprintf("buckling %.5f(bohr)",(word(LIST,i)+0)*ALAT_0), \
           f(x) lc rgb "red" ti "parabolic fit"
 	unset label 1
 	unset label 2
