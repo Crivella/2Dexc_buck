@@ -87,7 +87,7 @@ for alat in ${ALAT_LIST}; do
 		set_tab $TAB_C
 
 		buck_a=`printf %.5f $buck`
-		buck=`echo $buck * $ALAT_0/$alat`
+		buck=`echo "$buck * $ALAT_0/$alat" | bc -l`
 
 		if [[ $BCK=="1" ]]; then
 			Z=`echo "$A1_z + $buck" | bc -l`
