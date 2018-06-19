@@ -296,8 +296,10 @@ for alat in ${ALAT_LIST}; do
 		KPT_MODE="K_POINTS {automatic}"
 		KPT_LIST=${KPT_LIST_pw2gw}
 
+		frun_check
+
 		#print_in_pw nscf
-		if [[ "$DO_PW2GW" != "n" ]]; then
+		if [[ "$DO_NSCF_OPT" != "n" ]] || [[  $FRUN_CHECK == 1 ]]; then
 			do_command "$RUN_COMMAND $BIN_DIR/pw.x" "date io" $BRIGHT_GREEN
 		fi
 
@@ -307,7 +309,7 @@ for alat in ${ALAT_LIST}; do
 		OUT=${PREFIX}_pw2gw.out
 
 		#print_in_pw2gw
-		if [[ "$DO_NSCF_OPT" != "n" ]]; then
+		if [[ "$DO_PW2GW" != "n" ]] || [[  $FRUN_CHECK == 1 ]]; then
 			do_command "$RUN_COMMAND $BIN_DIR/pw2gw.x" "date io" $BRIGHT_GREEN
 		fi
 
@@ -320,10 +322,14 @@ for alat in ${ALAT_LIST}; do
 		cd ${PREFIX}
 
 		if [[ ! -f "averaged.dat" ]]; then
-			do_command "../tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
+			if [[ -f "epsX.dat" ]]; then
+				do_command "../tool/bin/eps_average.x epsX.dat epsY.dat" "null" $BRIGHT_GREEN
+			fi
 		fi
 		if [[ ! -f "real_xy.dat" ]]; then
-			do_command "../tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
+			if [[ -f "averaged.dat" ]]; then
+				do_command "../tool/bin/apply_kk_im.x averaged.dat real_xy.dat 1" "null" $BRIGHT_GREEN
+			fi
 		fi		
 
 		EPS0=`cat real_xy.dat | grep -v "#" | head -n 1 | tr -s " " | cut -d" " -f3`

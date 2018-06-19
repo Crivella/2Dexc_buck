@@ -181,7 +181,40 @@ cat > $IN << EOF
 EOF
 }
 
+function frun_check()
+{
+	flist=`echo $FRUN_LIST | tr " " "\n"`
+	while read -r line; do
+		C1=`echo "$line" | cut -d: -f1 | grep $alat`
+		C2=`echo "$line" | cut -d: -f2 | grep $buck_a`
+
+		if [[ $C1 != "" ]] && [[ $C2 != "" ]]; then
+			FRUN_CHECK=1
+		else
+			FRUN_CHECK=0
+		fi
+	done <<< "$flist"
+}
+
 export -f print_in_pw
 export -f print_in_pw2gw
 export -f do_command
 export -f print_str
+export -f frun_check
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

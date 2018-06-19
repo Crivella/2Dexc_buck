@@ -22,6 +22,9 @@ KPT_LIST_scf="12 12 1 1 1 1"
 
 DO_NSCF_OPT="y"			#If != 'n' run the nscf calculation for the optical properties
 DO_PW2GW="y"			#If != 'n' run the pw2gw calculation for the optical properties
+FRUN_LIST=""			#list of nscf/pw2gw calculation to run anyway if encountered in the normal cycle
+				#example "4.6:0.1 4.7:0.2 ..." (celldim:buck) separate them by using spaces
+				#example "4.6:0.1,0.2,0.3" use , to make a list of cdim/buck
 KPT_LIST_pw2gw="102 102 1 0 0 0"
 
 PARALLEL_scf="-npools 2" #-npools 17
