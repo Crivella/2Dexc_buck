@@ -18,7 +18,7 @@ NAME=sprintf("%s_SAVE.dat",PREFIX)
 ONAME=sprintf("%s_min_cd.pdf",PREFIX)
 set output ONAME
 
-system(sprintf("tools/split_cd.sh %s",NAME))
+system(sprintf("tools/PP/split_cd.sh %s",NAME))
 
 #LIST="4.64 4.66 4.67 4.674 4.676 4.6765 4.678 4.6785 4.679 4.6795 4.6798 4.6799 4.68"
 LIST=system("cat system.sh | grep ALAT_LIST | cut -d \"=\" -f 2 | tr -d '\"' | cut -d \"#\" -f 1")

@@ -18,7 +18,7 @@ NAME=sprintf("%s_SAVE.dat",PREFIX)
 ONAME=sprintf("%s_min_bk.pdf",PREFIX)
 set output ONAME
 
-system(sprintf("tools/split_bk.sh %s",NAME))
+system(sprintf("tools/PP/split_bk.sh %s",NAME))
 
 #LIST="0.0000 0.0100 0.0200 0.0300 0.0500 0.0700 0.0900"
 LIST=system("cat system.sh | grep BUCKLING_LIST | cut -d \"=\" -f 2 | tr -d '\"' | cut -d \"#\" -f 1")

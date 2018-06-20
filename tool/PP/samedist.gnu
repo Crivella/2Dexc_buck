@@ -12,7 +12,7 @@ ONAME=sprintf("%s_samedist.pdf",PREFIX)
 set output ONAME
 set fit quiet
 
-system(sprintf("tools/split_sd.sh %s",NAME))
+system(sprintf("tools/PP/split_sd.sh %s",NAME))
 
 NAME=sprintf("SD_%s",NAME)
 
@@ -80,6 +80,8 @@ plot \
 	NAME u 2:($8-a) w p pt 7 ps 0.3 t "Γ_{vb}", \
 	f(x)-a w l t "parabolic fit", \
 	[0:r] g(x)-a w l t "linear fit"
+
+system("rm SD_*")
 
 
 

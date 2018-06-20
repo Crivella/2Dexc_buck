@@ -29,4 +29,14 @@ in two-dimensional systems, with the possibility to introduce strain and bucklin
   The script will identify already performed calculation and read their previous output instead of re-doing them.  
   If you want to redo a calculation, its previous output should be deleted.  
 
+## PPtools
+GNUplot post-processing tool for the final {PREFIX}_SAVE.dat file.
+Launch these scripts from the folder containing the 'system.sh' and '{PREFIX}_SAVE.dat' files
+  1. min_cd.gnu:  Plot the total energy VS buckling for every celldim specified in the LIST in 'system.sh'. Fit the data using a 'parabolic/quadratic fit' and take the total energy at the extrema for every celldim. Plot the "Total energ VS celldim(minimized)" plus its fit.
+  2. min_bk.gnu :  Plot the total energy VS celldim for every buckling specified in the LIST in 'system.sh'. Fit the data using a 'parabolic/quadratic fit' and take the total energy at the extrema for every buckling. Plot the "Total energ VS buckling(minimized)" plus its fit.
+  3. samedist.gnu:  Plot the "Total energy VS buckling" where the distance between atom is kept constant as the reference equilibrium distance. Also plot the fit of the "energy at the valence and conduction band extrema VS celldim"
+  4. inplane.gnu:  Plot the "Total energy vs celldim" for buckling = 0 and fit it.
+
+
+
 
