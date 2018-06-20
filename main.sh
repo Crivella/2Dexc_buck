@@ -309,7 +309,7 @@ for alat in ${ALAT_LIST}; do
 		OUT=${PREFIX}_pw2gw.out
 
 		#print_in_pw2gw
-		if [[ "$DO_PW2GW" != "n" ]] || [[  $FRUN_CHECK == 1 ]]; then
+		if [[ "$DO_PW2GW" != "n" ]] || [[  $FRUN_CHECK == 1 && $DO_PW2GW_FRUN != "n" ]]; then
 			do_command "$RUN_COMMAND $BIN_DIR/pw2gw.x" "date io" $BRIGHT_GREEN
 		fi
 
