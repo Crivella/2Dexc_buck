@@ -184,14 +184,26 @@ EOF
 function frun_check()
 {
 	flist=`echo $FRUN_LIST | tr " " "\n"`
+	FRUN_CHECK=0
 	while read -r line; do
-		C1=`echo "$line" | cut -d: -f1 | grep $alat`
-		C2=`echo "$line" | cut -d: -f2 | grep $buck_a`
+		list1=`echo "$line" | cut -d: -f1 | tr "," "\n"`
+		list2=`echo "$line" | cut -d: -f2 | tr "," "\n"`
+
+		C1=""
+		C2=""
+		while read -r line2; do
+			if (( `echo "$line2 == $alat" | bc -l`  )); then
+				C1="y"
+			fi
+		done <<< "$list1"
+		while read -r line3; do
+			if (( `echo "$line3 == $buck_a" | bc -l`  )); then
+				C2="y"
+			fi
+		done <<< "$list2"
 
 		if [[ $C1 != "" ]] && [[ $C2 != "" ]]; then
 			FRUN_CHECK=1
-		else
-			FRUN_CHECK=0
 		fi
 	done <<< "$flist"
 }
