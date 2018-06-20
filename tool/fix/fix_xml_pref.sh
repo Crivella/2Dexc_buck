@@ -1,5 +1,7 @@
 #!/bin/bash
 
+LIST=`grep "\<prefix\>" *.xml`
+
 while read -r line; do 
 	file=`echo $line | cut -d: -f1`
 	l2=`echo $line | cut -d">" -f2 | cut -d"<" -f1`
