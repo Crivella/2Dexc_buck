@@ -1,6 +1,8 @@
 #!/bin/bash
 
 source ./ENVIRONMENT_VARIABLES
+
+KEEP_DATE=`date +%Y-%m-%d_%H.%M.%S`
 echo "BIN_DIR:" $BIN_DIR
 echo "PSEUDO_DIR:" $PSEUDO_DIR
 echo "TMP_DIR:" $TMP_DIR

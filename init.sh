@@ -66,20 +66,39 @@ function do_command()
 	
 	if [[ `echo $2 | grep -i "io"` != "" ]]; then
 		if [[ ${IN} != "" ]]; then
-			if [[ `grep "JOB DONE" $OUT 2>/dev/null` == "" ]]; then
-				EX=`echo ${COMMAND} | tr " " '\n' | grep ".x" | rev | cut -d/ -f1 | rev | cut -d. -f1`
-				PARALLEL=""
-				if [[ `echo ${IN} | grep "_scf."` != "" ]]; then
-					EX2="scf"
-					PARALLEL=${PARALLEL_scf}
-				else if [[ `echo ${IN} | grep "_nscf"` != "" ]]; then
-					EX2="nscf"
-					PARALLEL=${PARALLEL_nscf}
-				fi fi
-				eval "print_in_${EX} ${EX2}"
+			EX=`echo ${COMMAND} | tr " " '\n' | grep ".x" | rev | cut -d/ -f1 | rev | cut -d. -f1`
+			PARALLEL=""
+			if [[ `echo ${IN} | grep "_scf."` != "" ]]; then
+				EX2="scf"
+				PARALLEL=${PARALLEL_scf}
+			else if [[ `echo ${IN} | grep "_nscf"` != "" ]]; then
+				EX2="nscf"
+				PARALLEL=${PARALLEL_nscf}
+			fi fi
+			IN_app=${IN}
+			IN="test.in"
+			eval "print_in_${EX} ${EX2}"
+			IN=${IN_app}
+
+			C1=""
+			if [[ -f ${IN} ]]; then
+				C1=`diff -q test.in $IN`
+			fi
+			if [[ `grep "JOB DONE" ${OUT} 2>/dev/null` == "" ]] || [[ ${C1} != "" ]]; then
+				if [[ $C1 != "" ]]; then
+					mkdir -p old
+					if [[ -f ${IN} ]]; then
+						mv ${IN} "old/${IN}__${KEEP_DATE}"
+					fi
+					if [[ -f ${OUT} ]]; then
+						mv ${OUT} "old/${OUT}__${KEEP_DATE}"
+					fi
+				fi
+				mv test.in ${IN}
 				echo -e "${TAB}  ${3}${COMMAND} ${PARALLEL} < ${IN} > ${OUT}${RESET}"
 				${COMMAND} ${PARALLEL} < ${IN} > ${OUT}
 			else
+				rm test.in
 				print_str "Job already performed. Reading from previous output" "" $ORANGE
 			fi
 		else
