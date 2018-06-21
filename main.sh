@@ -37,16 +37,22 @@ Dy=`echo "$A1_y - $A2_y" | bc -l`
 Dz=`echo "$A1_z - $A2_z" | bc -l`
 DIST_0=`echo "${ALAT_0} * sqrt($Dx^2 + $Dy^2 + ($Dz * $CDIM3_0)^2)" | bc -l`
 
+alist=${ALAT_LIST}
+#Add specific point to cicle through
+plist_init
+
 let TAB_C++
-for alat in ${ALAT_LIST}; do
+for alat_a in ${alist}; do
 	set_tab $TAB_C
-	alat=`printf %.5f $alat`
+	alat=`printf %.5f $alat_a`
 	cdim3=`echo "${ALAT_0}*${CDIM3_0} / $alat" | bc -l`
 	cdim3=`printf %.4f $cdim3`
 	print_str "Running alat=${alat}   cdim3=${cdim3}" "title" $YELLOW
 
 	#Introduce buckling value to calculate that gives atom distance equal to DIST_0
 	#Fixed atom distance calculation
+	
+	blist="$BUCKLING_LIST "
 	if [[ "$FIX_DIST" != "n" ]]; then
 		if (( `echo "$alat <= ${ALAT_0}" | bc -l` )); then
 			CHECK=0
@@ -63,20 +69,27 @@ for alat in ${ALAT_LIST}; do
 					break
 				fi
 			done
-			blist="$BUCKLING_LIST"
-			added="no"
+			added=""
 			if [[ $CHECK == "0" ]]; then
 				Arat=`echo "$ALAT_0 / $alat" | bc -l`
 				b=`echo "sqrt(($Dx^2 + $Dy^2)*($Arat^2 - 1) + $Arat^2*$Dz) - $Dz" | bc -l`
 				b=`printf %0.5f $b`
 				added="$b"
-				blist="$BUCKLING_LIST $b"
+				blist+=" $b "
 				print_str "Added buckling value $b to loop to make constant distant calculation"
 			fi
 		else
 			print_str "WARNING: impossible to add buckling to keep bond_lenght constant"
 			print_str "         alat=$alat > alat_0=${ALAT_0}"
 		fi
+	fi
+
+	CP=`echo "${plist}" | grep ${alat_a}`
+	if [[ $CP != "" ]]; then
+		if [[ `echo ${ALAT_LIST} | grep ${alat_a}` == "" ]]; then
+			blist=""
+		fi
+		blist+=`echo "${CP}" | cut -d ":" -f 2 | tr "," " "`
 	fi
 
 	#Sort buckling list

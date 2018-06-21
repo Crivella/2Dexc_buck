@@ -9,6 +9,8 @@ CDIM3_0=6			#Value of celldm(3) that defines the constant vacuum lenght
 ALAT_LIST="5.70 5.72 5.74"	#List of alat to cycle on
 BUCKLING_LIST="0.00"		#List of bucklings to cycle on
 				#An additional buckling for every alat will be added to also give the result for constant distance
+POINT_LIST="5.75:0.00"		#Add additional point of specific celldim and buckling combination
+				#(Useful to calcualte a specific point avoiding running loop on all other buck/cdim)
 
 #QE input cards values
 prefix=AlN

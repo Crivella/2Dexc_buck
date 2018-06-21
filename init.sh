@@ -191,13 +191,13 @@ function frun_check()
 
 		C1=""
 		C2=""
-		while read -r line2; do
-			if (( `echo "$line2 == $alat" | bc -l`  )); then
+		while read -r line1; do
+			if (( `echo "$line1 == $alat" | bc -l`  )); then
 				C1="y"
 			fi
 		done <<< "$list1"
-		while read -r line3; do
-			if (( `echo "$line3 == $buck_a" | bc -l`  )); then
+		while read -r line2; do
+			if (( `echo "$line2 == $buck_a" | bc -l`  )); then
 				C2="y"
 			fi
 		done <<< "$list2"
@@ -208,11 +208,26 @@ function frun_check()
 	done <<< "$flist"
 }
 
+function plist_init()
+{
+	plist=`echo $POINT_LIST | tr " " "\n"`
+	while read -r line; do
+		list1=`echo "$line" | cut -d: -f1 | tr "," "\n"`
+
+		while read -r line1; do
+			if [[ `echo "${ALAT_LIST}" | grep ${line1}` == "" ]]; then
+				alist+=" ${line1}"
+			fi
+		done <<< "$list1"
+	done <<< "$plist"
+}
+
 export -f print_in_pw
 export -f print_in_pw2gw
 export -f do_command
 export -f print_str
 export -f frun_check
+export -f plist_init
 
 
 
