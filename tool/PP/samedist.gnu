@@ -12,7 +12,7 @@ ONAME=sprintf("%s_samedist.pdf",PREFIX)
 set output ONAME
 set fit quiet
 
-system(sprintf("tools/PP/split_sd.sh %s",NAME))
+system(sprintf("tool/PP/split_sd.sh %s",NAME))
 
 NAME=sprintf("SD_%s",NAME)
 

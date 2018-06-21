@@ -18,7 +18,7 @@ NAME=sprintf("%s_SAVE.dat",PREFIX)
 ONAME=sprintf("%s_min_cd.pdf",PREFIX)
 set output ONAME
 
-system(sprintf("tools/PP/split_cd.sh %s",NAME))
+system(sprintf("tool/PP/split_cd.sh %s",NAME))
 
 #LIST="4.64 4.66 4.67 4.674 4.676 4.6765 4.678 4.6785 4.679 4.6795 4.6798 4.6799 4.68"
 LIST=system("cat system.sh | grep ALAT_LIST | cut -d \"=\" -f 2 | tr -d '\"' | cut -d \"#\" -f 1")
@@ -53,6 +53,7 @@ do for[i=1:words(LIST)] {
 	unset label 1
 }
 
+a=0; b=0; c=0
 fit f(x) PNAME u 1:2 via a,b,c
 
 set title "E_{tot} vs Cell dimension (minimized for buckling)"

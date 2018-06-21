@@ -18,7 +18,7 @@ NAME=sprintf("%s_SAVE.dat",PREFIX)
 ONAME=sprintf("%s_min_bk.pdf",PREFIX)
 set output ONAME
 
-system(sprintf("tools/PP/split_bk.sh %s",NAME))
+system(sprintf("tool/PP/split_bk.sh %s",NAME))
 
 #LIST="0.0000 0.0100 0.0200 0.0300 0.0500 0.0700 0.0900"
 LIST=system("cat system.sh | grep BUCKLING_LIST | cut -d \"=\" -f 2 | tr -d '\"' | cut -d \"#\" -f 1")
@@ -49,12 +49,15 @@ do for[i=1:words(LIST)] {
 	print BUCK,"\t\t", f(app)
 	set label 1 at graph 0.25, graph 0.8 tc "red" sprintf("f(x) = %g + %g*x + %g*x^2", a,b,c) font "Verdana,11"
 	set label 2 at graph 0.35, graph 0.7 tc "blue" sprintf("dist = %g (bohr)", dist) font "Verdana,11"
+	set label 3 at graph 0.35, graph 0.6 tc "green" sprintf("min = %g", app) font "Verdana,11"
 	p N u 1:4 ps 0.5 pt 7  lc rgb "black" ti sprintf("buckling %.5f(bohr)",(word(LIST,i)+0)*ALAT_0), \
           f(x) lc rgb "red" ti "parabolic fit"
 	unset label 1
 	unset label 2
+	unset label 3
 }
 
+a=0; b=0; c=0
 fit f(x) PNAME u ($1*4.68):2 via a,b,c
 
 set title "E_{tot} vs buckling (minimized for cell dimension)"
