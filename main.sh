@@ -22,6 +22,7 @@ TAB_C=0
 set_tab $TAB_C
 
 SAVE="${prefix}_SAVE.dat"
+save_file ${SAVE}
 printf "#%12s%12s%11s%13s%12s%12s%12s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
 
 

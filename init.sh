@@ -86,13 +86,8 @@ function do_command()
 			fi
 			if [[ `grep "JOB DONE" ${OUT} 2>/dev/null` == "" ]] || [[ ${C1} != "" ]]; then
 				if [[ $C1 != "" ]]; then
-					mkdir -p old
-					if [[ -f ${IN} ]]; then
-						mv ${IN} "old/${IN}__${KEEP_DATE}"
-					fi
-					if [[ -f ${OUT} ]]; then
-						mv ${OUT} "old/${OUT}__${KEEP_DATE}"
-					fi
+					save_file ${IN}
+					save_file ${OUT}
 				fi
 				mv test.in ${IN}
 				echo -e "${TAB}  ${3}${COMMAND} ${PARALLEL} < ${IN} > ${OUT}${RESET}"
@@ -241,12 +236,21 @@ function plist_init()
 	done <<< "$plist"
 }
 
+function save_file()
+{
+	mkdir -p old
+	if [[ -f $1 ]]; then
+		mv $1 "old/$1__${KEEP_DATE}"
+	fi
+}
+
 export -f print_in_pw
 export -f print_in_pw2gw
 export -f do_command
 export -f print_str
 export -f frun_check
 export -f plist_init
+export -f save_file
 
 
 
