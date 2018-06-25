@@ -199,6 +199,9 @@ function frun_check()
 {
 	flist=`echo $FRUN_LIST | tr " " "\n"`
 	FRUN_CHECK=0
+	if [[ "$flist" == "" ]]; then
+		return 1
+	fi
 	while read -r line; do
 		list1=`echo "$line" | cut -d: -f1 | tr "," "\n"`
 		list2=`echo "$line" | cut -d: -f2 | tr "," "\n"`

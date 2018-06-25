@@ -23,7 +23,7 @@ set_tab $TAB_C
 
 SAVE="${prefix}_SAVE.dat"
 save_file ${SAVE}
-printf "#%12s%12s%11s%13s%12s%12s%12s%10s%10s%10s%14s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h(a.u.)" "m_e(a.u.)" "m_red(a.u.)" "E_vb(0)" "E_cb(0)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
+printf "#%10s%12s%11s%13s%10s%10s%10s%12s%9s%9s%7s%13s%14s\n" "alat(bohr)" "buck(bohr)" "dist(bohr)" "Etot(Ry)" "m_h1(au)" "m_h2(au)" "m_e(au)" "m_red(a.u.)" "E_vb(eV)" "E_cb(eV)" "alfa_0" "Exc_b_en(eV)" "Exc_rad(a.u.)" > $SAVE
 
 
 #Cycle over different celldimension
@@ -211,9 +211,13 @@ for alat_a in ${alist}; do
 	
 		MASS_VB=0
 		MASS_CB=0
-		MASS_VB_1=0
-		MASS_CB_1=0
+		MASS_VB_HEAVY=0
+		MASS_VB_LIGHT=0
+		MASS_CB_HEAVY=0
+		MASS_CB_LIGHT=0
 		for app in $AFTER $BEFORE; do
+			MASS_VB_LIGHT_APP="0"
+			MASS_CB_LIGHT_APP="0"
 			END=`cat High_symm/$ibrav.kpt | tail -n +3 | head -n $app | tail -n 1 | tr -s " " | cut -d" " -f 2-4`
 			echo -e "${TAB}Running direction $START -> $END"
 
@@ -232,10 +236,10 @@ for alat_a in ${alist}; do
 			fi
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+1)) -e OUTNAME='${BAND_OUT:0: -4}_vb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
 			E_BAND_0_VB=`cat app1.dat`
-			MASS_VB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
+			MASS_VB_HEAVY_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+1)) -e OUTNAME='${BAND_OUT:0: -4}_cb.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
 			E_BAND_0_CB=`cat app1.dat`
-			MASS_CB_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
+			MASS_CB_HEAVY_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			rm app.dat
 			rm app1.dat
 
@@ -252,17 +256,21 @@ for alat_a in ${alist}; do
 				print_str "  Degeneracy found within the 1meV limit.."
 				print_str "  running fit of the vb-1 band"
 				do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($VB+0)) -e OUTNAME='${BAND_OUT:0: -4}_vb-1.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
-				MASS_VB_1_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
+				MASS_VB_LIGHT_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			else
 				print_str "  No degeneracy for the valence band"
 				print_str "  vb and vb-1 are split more than 1meV"
 			fi
 
 			if [[ $DEGEN == "1" ]]; then
-				print_str "m_vb = $MASS_CB_APP    m_vb-1 = $MASS_CB_1_APP" "" $CYAN
-				MASS_VB=`echo "$MASS_VB + sqrt(($MASS_VB_APP + $MASS_VB_1_APP)^2)/4" | bc -l`
+				print_str "m_vb = $MASS_VB_HEAVY_APP    m_vb-1 = $MASS_VB_LIGHT_APP" "" $CYAN
+				MASS_VB=`echo "$MASS_VB + sqrt(($MASS_VB_HEAVY_APP + $MASS_VB_LIGHT_APP)^2)/4" | bc -l`
+				MASS_VB_HEAVY=`echo "$MASS_VB_HEAVY + sqrt(($MASS_VB_HEAVY_APP)^2)/2" | bc -l`
+				MASS_VB_LIGHT=`echo "$MASS_VB_LIGHT + sqrt(($MASS_VB_LIGHT_APP)^2)/2" | bc -l`
 			else
-				MASS_VB=`echo "$MASS_VB + sqrt(($MASS_VB_APP)^2)/2" | bc -l`
+				print_str "m_vb = $MASS_VB_HEAVY_APP" "" $CYAN
+				MASS_VB=`echo "$MASS_VB + sqrt(($MASS_VB_HEAVY_APP)^2)/2" | bc -l`
+				MASS_VB_HEAVY=`echo "$MASS_VB_HEAVY + sqrt(($MASS_VB_HEAVY_APP)^2)/2" | bc -l`
 			fi
 
 			E_CB=`echo $MIN_LINE | cut -d" " -f $CB`
@@ -271,23 +279,27 @@ for alat_a in ${alist}; do
 
 			DEGEN=0
 			print_str "Looking for degeneracy of the conduction band" "sub"
-			print_str "  e(cb) = $E_VB_1,    e(cb+1) = $E_VB  ->  $DIFF"
+			print_str "  e(cb) = $E_CB,    e(cb+1) = $E_CB_1  ->  $DIFF"
 			if (( `echo "$DIFF<0.001" | bc -l` )); then
 				DEGEN=1
 				print_str "  Degeneracy found within the 1meV limit.."
 				print_str "  running fit of the cb+1 band"
 				do_command "gnuplot -e FILE='$BAND_OUT' -e NBND=$(($CB+2)) -e OUTNAME='${BAND_OUT:0: -4}_cb-1.pdf' emass_fit.gnu" "" $BRIGHT_GREEN
-				MASS_CB_1_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
+				MASS_CB_LIGHT_APP=`echo "(2* $(cat app.dat) / $HA_to_EV * ($alat /(2*$PI))^2)^(-1)" | bc -l`
 			else
 				print_str "  No degeneracy for the conduction band"
 				print_str "  cb and cb+1 are split more than 1meV"
 			fi
 
 			if [[ $DEGEN == "1" ]]; then
-				print_str "m_cb = $MASS_CB_APP    m_cb+1 = $MASS_CB_1_APP" "" $CYAN
-				MASS_CB=`echo "$MASS_CB + sqrt(($MASS_CB_APP + $MASS_CB_1_APP)^2)/4" | bc -l`
+				print_str "m_cb = $MASS_CB_HEAVY_APP    m_cb+1 = $MASS_CB_LIGHT_APP" "" $CYAN
+				MASS_CB=`echo "$MASS_CB + sqrt(($MASS_CB_HEAVY_APP + $MASS_CB_LIGHT_APP)^2)/4" | bc -l`
+				MASS_CB_HEAVY=`echo "$MASS_CB_HEAVY + sqrt(($MASS_CB_HEAVY_APP)^2)/2" | bc -l`
+				MASS_CB_LIGHT=`echo "$MASS_CB_LIGHT + sqrt(($MASS_CB_LIGHT_APP)^2)/2" | bc -l`
 			else
-				MASS_CB=`echo "$MASS_CB + sqrt(($MASS_CB_APP)^2)/2" | bc -l`
+				print_str "m_cb = $MASS_CB_HEAVY_APP" "" $CYAN
+				MASS_CB=`echo "$MASS_CB + sqrt(($MASS_CB_HEAVY_APP)^2)/2" | bc -l`
+				MASS_CB_HEAVY=`echo "$MASS_CB_HEAVY + sqrt(($MASS_CB_HEAVY_APP)^2)/2" | bc -l`
 			fi
 
 			#echo "m_vb = $MASS_VB_APP  m_cb = $MASS_CB_APP  m_vb_1 = $MASS_VB_1_APP  m_cb_1 = $MASS_CB_1_APP"
@@ -380,7 +392,7 @@ for alat_a in ${alist}; do
 		print_str "EXC:  Binding = $Eb   radius = $rex" "sub" $CYAN
 
 
-		printf "%13.5f%12.5f%11.5f%13.7f%12.5f%12.5f%12.5f%10.4f%10.4f%10.4f%14.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
+		printf "%11.5f%12.5f%11.5f%13.7f%10.5f%10.5f%10.5f%12.5f%9.4f%9.4f%7.4f%13.6f%14.6f\n" "$alat" "$buck_bohr" "$DIST" "$ENERGY" "$MASS_VB_HEAVY" "$MASS_VB_LIGHT" "$MASS_CB" "$MU" "$E_BAND_0_VB" "$E_BAND_0_CB" "$ALFA0" "$Eb" "$rex" >> $SAVE
 	done
 	let TAB_C--
 	printf "\n" >> $SAVE
